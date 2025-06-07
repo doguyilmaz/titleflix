@@ -165,7 +165,6 @@ class TitleflixContentScript {
 
     if (document.title !== newTitle) {
       document.title = newTitle;
-      console.log('Titleflix: Updated title to:', newTitle);
     }
   }
 

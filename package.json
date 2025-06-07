@@ -7,7 +7,7 @@
   "scripts": {
     "build": "bun run build:ts && bun run build:extension",
     "build:ts": "tsc",
-    "build:extension": "cp manifest.json dist/ && cp src/popup.html dist/",
+    "build:extension": "cp manifest.json dist/ && cp src/popup.html dist/ && cp -r icons dist/",
     "dev": "tsc --watch",
     "clean": "rm -rf dist"
   },
