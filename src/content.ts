@@ -6,6 +6,8 @@ interface NetflixPageType {
 class TitleflixContentScript {
   private originalTitle: string;
   private observer: MutationObserver | null = null;
+  private lastSetTitle: string | null = null;
+  private hasValidTitle: boolean = false;
 
   constructor() {
     this.originalTitle = document.title;
@@ -60,7 +62,10 @@ class TitleflixContentScript {
       '.video-title h4',
       '.video-title',
       '.watch-video--title-text',
-      '.PlayerControlsNeo__all-controls .video-title'
+      '.PlayerControlsNeo__all-controls .video-title',
+      '[data-uia*="title"]',
+      '.watch-video--episode-title',
+      '.watch-video--series-title'
     ];
 
     for (const selector of selectors) {
@@ -70,12 +75,17 @@ class TitleflixContentScript {
       }
     }
 
-    // Fallback: try to extract from page URL or metadata
-    const urlMatch = window.location.pathname.match(/\/watch\/(\d+)/);
-    if (urlMatch) {
-      return `Watching (ID: ${urlMatch[1]})`;
+    // Try to get title from the page's original title before falling back
+    const originalTitle = document.title;
+    if (originalTitle && originalTitle !== 'Netflix' && !originalTitle.includes('Watching (ID:')) {
+      // Extract title from original page title (remove " - Netflix" suffix)
+      const cleanTitle = originalTitle.replace(/ - Netflix$/, '');
+      if (cleanTitle && cleanTitle !== 'Netflix') {
+        return cleanTitle;
+      }
     }
 
+    // No fallback - return undefined if we can't find a proper title
     return undefined;
   }
 
@@ -148,19 +158,32 @@ class TitleflixContentScript {
 
     switch (pageInfo.type) {
       case 'watch':
-        newTitle = pageInfo.title ? `${pageInfo.title} - Netflix` : 'Netflix - Watching';
+        if (pageInfo.title) {
+          newTitle = `${pageInfo.title} - Netflix`;
+          this.hasValidTitle = true;
+          this.lastSetTitle = newTitle;
+        } else if (!this.hasValidTitle) {
+          // Only try again if we haven't found a valid title yet
+          setTimeout(() => this.updateTitle(), 1000);
+          return; // Don't set a generic title
+        } else {
+          // We already have a valid title, don't override it
+          return;
+        }
         break;
       case 'title':
-        newTitle = pageInfo.title ? `${pageInfo.title} - Netflix` : 'Netflix - Title';
+        newTitle = pageInfo.title ? `${pageInfo.title} - Netflix` : 'Netflix';
         break;
       case 'search':
-        newTitle = pageInfo.title ? `${pageInfo.title} - Netflix` : 'Netflix - Search';
+        newTitle = pageInfo.title ? `${pageInfo.title} - Netflix` : 'Netflix';
         break;
       case 'browse':
-        newTitle = 'Netflix - Browse';
+        newTitle = 'Netflix';
+        this.hasValidTitle = false; // Reset when navigating away from watch page
         break;
       default:
         newTitle = 'Netflix';
+        this.hasValidTitle = false; // Reset when navigating away from watch page
     }
 
     if (document.title !== newTitle) {
@@ -231,11 +254,15 @@ class TitleflixContentScript {
 
     history.pushState = function(...args) {
       originalPushState.apply(history, args);
+      // Reset title state on navigation
+      self.hasValidTitle = false;
       setTimeout(async () => await self.updateTitle(), 100);
     };
 
     history.replaceState = function(...args) {
       originalReplaceState.apply(history, args);
+      // Reset title state on navigation
+      self.hasValidTitle = false;
       setTimeout(async () => await self.updateTitle(), 100);
     };
   }
