@@ -1,6 +1,6 @@
 {
   "name": "titleflix",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Chrome extension to change Netflix tab titles for better bookmarking.",
   "author": "Dogu Yilmaz <hello@doguyilmaz.com>",
   "license": "MIT",
