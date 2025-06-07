@@ -27,7 +27,7 @@ Titleflix automatically detects what you're watching and updates the tab title t
 - **🔖 Better Bookmarks**: Makes Netflix bookmarks actually useful
 - **🎨 Dynamic Icons**: Dark/light theme support with adaptive icons
 - **⚙️ Easy Controls**: Simple on/off toggle with theme preferences
-- **🛡️ Privacy-Focused**: Only runs on Netflix domains, no data collection
+- **🛡️ Privacy-Focused**: Only runs on Netflix domains, no data collection ([Privacy Policy](PRIVACY_POLICY.md))
 - **⚡ Lightweight**: Minimal performance impact
 - **🌐 Universal**: Works on all Netflix regions and languages
 
@@ -166,6 +166,10 @@ Found a bug or have a feature idea? Please [open an issue](https://github.com/do
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🔒 Privacy
+
+Titleflix is built with privacy as a core principle. We don't collect any data - see our [Privacy Policy](PRIVACY_POLICY.md) for complete details.
 
 ## 🙏 Acknowledgments
 

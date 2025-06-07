@@ -24,5 +24,6 @@
     "32": "icons/titleflix32_dark.png",
     "48": "icons/titleflix48_dark.png",
     "128": "icons/titleflix128_dark.png"
-  }
+  },
+  "homepage_url": "https://github.com/doguyilmaz/titleflix"
 }

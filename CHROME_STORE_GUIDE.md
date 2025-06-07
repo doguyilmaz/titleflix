@@ -93,6 +93,7 @@ Icons automatically adapt to your system's dark/light mode preference, or you ca
 • No data collection or tracking
 • Minimal permissions (activeTab, storage)
 • Open source and transparent
+• Full privacy policy available
 
 Transform your Netflix bookmarks today!
 ```
@@ -123,6 +124,7 @@ Since Titleflix is privacy-focused:
 - **Data collection**: "This item does not collect user data"
 - **Data usage**: Not applicable
 - **Data sharing**: Not applicable
+- **Privacy policy**: Link to your GitHub privacy policy: `https://github.com/doguyilmaz/titleflix/blob/main/PRIVACY_POLICY.md`
 
 ### 4. Permissions Justification
 If asked about permissions:
