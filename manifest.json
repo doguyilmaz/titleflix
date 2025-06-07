@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Titleflix",
+  "version": "1.0.0",
+  "description": "Changes Netflix tab titles for better bookmarking",
+  "permissions": [
+    "activeTab"
+  ],
+  "host_permissions": [
+    "*://*.netflix.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.netflix.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Titleflix"
+  }
+}

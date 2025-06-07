@@ -1,0 +1,21 @@
+{
+  "name": "titleflix",
+  "version": "1.0.0",
+  "description": "Chrome extension to change Netflix tab titles for better bookmarking",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "bun run build:ts && bun run build:extension",
+    "build:ts": "tsc",
+    "build:extension": "cp manifest.json dist/ && cp src/popup.html dist/",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/chrome": "^0.0.326"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
