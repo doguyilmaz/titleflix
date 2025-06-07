@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "description": "Changes Netflix tab titles for better bookmarking",
   "permissions": ["activeTab", "storage"],
+  "background": {
+    "service_worker": "background.js"
+  },
   "host_permissions": ["*://*.netflix.com/*"],
   "content_scripts": [
     {
@@ -17,9 +20,9 @@
     "default_title": "Titleflix"
   },
   "icons": {
-    "16": "icons/titleflix16.png",
-    "32": "icons/titleflix32.png",
-    "48": "icons/titleflix48.png",
-    "128": "icons/titleflix128.png"
+    "16": "icons/titleflix16_dark.png",
+    "32": "icons/titleflix32_dark.png",
+    "48": "icons/titleflix48_dark.png",
+    "128": "icons/titleflix128_dark.png"
   }
 }

@@ -19,6 +19,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load saved settings
   const settings = await loadSettings();
   
+  // Detect and save system theme for background script
+  await detectAndSaveSystemTheme();
+  
   // Apply theme
   applyTheme(settings.theme || 'auto');
   updateThemeButtons(settings.theme || 'auto');
@@ -99,6 +102,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     await chrome.storage.local.set({ theme });
     applyTheme(theme);
     updateThemeButtons(theme);
+    
+    // Notify background script to update icon
+    try {
+      await chrome.runtime.sendMessage({ type: 'THEME_CHANGED', theme });
+    } catch (error) {
+      console.error('Failed to notify background script:', error);
+    }
+  }
+
+  async function detectAndSaveSystemTheme(): Promise<void> {
+    try {
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      await chrome.storage.local.set({ systemTheme: isDark ? 'dark' : 'light' });
+      
+      // Immediately update icon if we're on auto theme
+      const settings = await loadSettings();
+      if (!settings.theme || settings.theme === 'auto') {
+        try {
+          await chrome.runtime.sendMessage({ type: 'THEME_CHANGED', theme: 'auto' });
+        } catch (error) {
+          console.error('Failed to notify background script on init:', error);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to detect system theme:', error);
+    }
   }
 
   function updateToggleState(toggle: HTMLElement, enabled: boolean, onNetflix: boolean): void {
