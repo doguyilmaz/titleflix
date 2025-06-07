@@ -48,11 +48,17 @@ class TitleflixContentScript {
   }
 
   private extractWatchTitle(): string | undefined {
+    // Try the specific Netflix video title structure first
+    const videoTitleContainer = document.querySelector('[data-uia="video-title"]');
+    if (videoTitleContainer) {
+      const title = this.parseVideoTitleContainer(videoTitleContainer);
+      if (title) return title;
+    }
+
     // Try multiple selectors for the video title during playback
     const selectors = [
       '.video-title h4',
       '.video-title',
-      '[data-uia="video-title"]',
       '.watch-video--title-text',
       '.PlayerControlsNeo__all-controls .video-title'
     ];
@@ -71,6 +77,38 @@ class TitleflixContentScript {
     }
 
     return undefined;
+  }
+
+  private parseVideoTitleContainer(container: Element): string | undefined {
+    try {
+      // Look for h4 (main title) and spans (episode info)
+      const h4 = container.querySelector('h4');
+      const spans = container.querySelectorAll('span');
+      
+      if (!h4?.textContent?.trim()) return undefined;
+      
+      const mainTitle = h4.textContent.trim();
+      
+      if (spans.length === 0) {
+        return mainTitle;
+      }
+      
+      // Extract episode information from spans
+      const episodeInfo = Array.from(spans)
+        .map(span => span.textContent?.trim())
+        .filter(text => text && text.length > 0)
+        .join(' ');
+      
+      if (episodeInfo) {
+        // Format: "Show Title: Episode Info"
+        return `${mainTitle}: ${episodeInfo}`;
+      }
+      
+      return mainTitle;
+    } catch (error) {
+      console.error('Error parsing video title container:', error);
+      return undefined;
+    }
   }
 
   private extractTitlePageTitle(): string | undefined {
@@ -98,22 +136,28 @@ class TitleflixContentScript {
     return undefined;
   }
 
-  private updateTitle(): void {
+  private async updateTitle(): Promise<void> {
+    // Check if extension is enabled
+    const isEnabled = await this.getExtensionState();
+    if (!isEnabled) {
+      return;
+    }
+
     const pageInfo = this.detectPageType();
     let newTitle = 'Netflix';
 
     switch (pageInfo.type) {
       case 'watch':
-        newTitle = pageInfo.title ? `▶️ ${pageInfo.title}` : 'Netflix - Watching';
+        newTitle = pageInfo.title ? `${pageInfo.title} - Netflix` : 'Netflix - Watching';
         break;
       case 'title':
-        newTitle = pageInfo.title ? `🎬 ${pageInfo.title}` : 'Netflix - Title';
+        newTitle = pageInfo.title ? `${pageInfo.title} - Netflix` : 'Netflix - Title';
         break;
       case 'search':
-        newTitle = pageInfo.title ? `🔍 ${pageInfo.title}` : 'Netflix - Search';
+        newTitle = pageInfo.title ? `${pageInfo.title} - Netflix` : 'Netflix - Search';
         break;
       case 'browse':
-        newTitle = '🏠 Netflix - Browse';
+        newTitle = 'Netflix - Browse';
         break;
       default:
         newTitle = 'Netflix';
@@ -122,6 +166,15 @@ class TitleflixContentScript {
     if (document.title !== newTitle) {
       document.title = newTitle;
       console.log('Titleflix: Updated title to:', newTitle);
+    }
+  }
+
+  private async getExtensionState(): Promise<boolean> {
+    try {
+      const result = await chrome.storage.local.get(['titleflixEnabled']);
+      return result.titleflixEnabled !== false; // Default to enabled
+    } catch {
+      return true; // Default to enabled if storage fails
     }
   }
 
@@ -157,7 +210,7 @@ class TitleflixContentScript {
 
       if (shouldUpdate) {
         // Debounce updates
-        setTimeout(() => this.updateTitle(), 500);
+        setTimeout(async () => await this.updateTitle(), 500);
       }
     });
 
@@ -169,21 +222,22 @@ class TitleflixContentScript {
 
     // Also listen for popstate events (back/forward navigation)
     window.addEventListener('popstate', () => {
-      setTimeout(() => this.updateTitle(), 100);
+      setTimeout(async () => await this.updateTitle(), 100);
     });
 
     // Listen for pushstate/replacestate (SPA navigation)
     const originalPushState = history.pushState;
     const originalReplaceState = history.replaceState;
+    const self = this;
 
     history.pushState = function(...args) {
       originalPushState.apply(history, args);
-      setTimeout(() => new TitleflixContentScript().updateTitle(), 100);
+      setTimeout(async () => await self.updateTitle(), 100);
     };
 
     history.replaceState = function(...args) {
       originalReplaceState.apply(history, args);
-      setTimeout(() => new TitleflixContentScript().updateTitle(), 100);
+      setTimeout(async () => await self.updateTitle(), 100);
     };
   }
 

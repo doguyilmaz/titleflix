@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "description": "Changes Netflix tab titles for better bookmarking",
   "permissions": [
-    "activeTab"
+    "activeTab",
+    "storage"
   ],
   "host_permissions": [
     "*://*.netflix.com/*"
