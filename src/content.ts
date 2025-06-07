@@ -20,131 +20,40 @@ class TitleflixContentScript {
   }
 
   private detectPageType(): NetflixPageType {
-    const url = window.location.href;
     const pathname = window.location.pathname;
 
-    // Watch page - when actually watching content
-    if (pathname.includes('/watch/')) {
+    // Only work on watch pages with video IDs (e.g., /watch/81713948)
+    const watchMatch = pathname.match(/^\/watch\/(\d+)/);
+    if (watchMatch) {
       const title = this.extractWatchTitle();
       return { type: 'watch', title };
-    }
-
-    // Title details page
-    if (pathname.includes('/title/')) {
-      const title = this.extractTitlePageTitle();
-      return { type: 'title', title };
-    }
-
-    // Search results
-    if (pathname.includes('/search')) {
-      const query = new URLSearchParams(window.location.search).get('q');
-      return { type: 'search', title: query ? `Search: ${query}` : 'Search' };
-    }
-
-    // Browse pages (genre, home, etc.)
-    if (pathname === '/' || pathname.includes('/browse')) {
-      return { type: 'browse', title: 'Browse' };
     }
 
     return { type: 'unknown' };
   }
 
   private extractWatchTitle(): string | undefined {
-    // Try the specific Netflix video title structure first
+    // Look for the exact structure from the HTML: data-uia="video-title" with h4 and span
     const videoTitleContainer = document.querySelector('[data-uia="video-title"]');
     if (videoTitleContainer) {
-      const title = this.parseVideoTitleContainer(videoTitleContainer);
-      if (title) return title;
-    }
-
-    // Try multiple selectors for the video title during playback
-    const selectors = [
-      '.video-title h4',
-      '.video-title',
-      '.watch-video--title-text',
-      '.PlayerControlsNeo__all-controls .video-title',
-      '[data-uia*="title"]',
-      '.watch-video--episode-title',
-      '.watch-video--series-title'
-    ];
-
-    for (const selector of selectors) {
-      const element = document.querySelector(selector);
-      if (element?.textContent?.trim()) {
-        return element.textContent.trim();
+      const h4 = videoTitleContainer.querySelector('h4');
+      const span = videoTitleContainer.querySelector('span');
+      
+      if (h4?.textContent?.trim()) {
+        const showTitle = h4.textContent.trim();
+        const episodeTitle = span?.textContent?.trim();
+        
+        if (episodeTitle) {
+          return `${showTitle}: ${episodeTitle}`;
+        }
+        return showTitle;
       }
     }
 
-    // Try to get title from the page's original title before falling back
-    const originalTitle = document.title;
-    if (originalTitle && originalTitle !== 'Netflix' && !originalTitle.includes('Watching (ID:')) {
-      // Extract title from original page title (remove " - Netflix" suffix)
-      const cleanTitle = originalTitle.replace(/ - Netflix$/, '');
-      if (cleanTitle && cleanTitle !== 'Netflix') {
-        return cleanTitle;
-      }
-    }
-
-    // No fallback - return undefined if we can't find a proper title
+    // No fallback - return undefined if we can't find the proper video title element
     return undefined;
   }
 
-  private parseVideoTitleContainer(container: Element): string | undefined {
-    try {
-      // Look for h4 (main title) and spans (episode info)
-      const h4 = container.querySelector('h4');
-      const spans = container.querySelectorAll('span');
-      
-      if (!h4?.textContent?.trim()) return undefined;
-      
-      const mainTitle = h4.textContent.trim();
-      
-      if (spans.length === 0) {
-        return mainTitle;
-      }
-      
-      // Extract episode information from spans
-      const episodeInfo = Array.from(spans)
-        .map(span => span.textContent?.trim())
-        .filter(text => text && text.length > 0)
-        .join(' ');
-      
-      if (episodeInfo) {
-        // Format: "Show Title: Episode Info"
-        return `${mainTitle}: ${episodeInfo}`;
-      }
-      
-      return mainTitle;
-    } catch (error) {
-      console.error('Error parsing video title container:', error);
-      return undefined;
-    }
-  }
-
-  private extractTitlePageTitle(): string | undefined {
-    // Try multiple selectors for title page
-    const selectors = [
-      '[data-uia="title-info-title"]',
-      '.title-info-title',
-      'h1[data-uia="title-info-title"]',
-      '.previewModal--player-titleTreatment-logo img',
-      '.about-header h1'
-    ];
-
-    for (const selector of selectors) {
-      const element = document.querySelector(selector);
-      if (element?.textContent?.trim()) {
-        return element.textContent.trim();
-      }
-      // Check for alt text in logo images
-      if (element?.tagName === 'IMG') {
-        const alt = (element as HTMLImageElement).alt;
-        if (alt?.trim()) return alt.trim();
-      }
-    }
-
-    return undefined;
-  }
 
   private async updateTitle(): Promise<void> {
     // Check if extension is enabled
@@ -154,40 +63,24 @@ class TitleflixContentScript {
     }
 
     const pageInfo = this.detectPageType();
-    let newTitle = 'Netflix';
 
-    switch (pageInfo.type) {
-      case 'watch':
-        if (pageInfo.title) {
-          newTitle = `${pageInfo.title} - Netflix`;
-          this.hasValidTitle = true;
-          this.lastSetTitle = newTitle;
-        } else if (!this.hasValidTitle) {
-          // Only try again if we haven't found a valid title yet
-          setTimeout(() => this.updateTitle(), 1000);
-          return; // Don't set a generic title
-        } else {
-          // We already have a valid title, don't override it
-          return;
+    if (pageInfo.type === 'watch') {
+      if (pageInfo.title) {
+        const newTitle = `${pageInfo.title} - Netflix`;
+        this.hasValidTitle = true;
+        this.lastSetTitle = newTitle;
+        
+        if (document.title !== newTitle) {
+          document.title = newTitle;
         }
-        break;
-      case 'title':
-        newTitle = pageInfo.title ? `${pageInfo.title} - Netflix` : 'Netflix';
-        break;
-      case 'search':
-        newTitle = pageInfo.title ? `${pageInfo.title} - Netflix` : 'Netflix';
-        break;
-      case 'browse':
-        newTitle = 'Netflix';
-        this.hasValidTitle = false; // Reset when navigating away from watch page
-        break;
-      default:
-        newTitle = 'Netflix';
-        this.hasValidTitle = false; // Reset when navigating away from watch page
-    }
-
-    if (document.title !== newTitle) {
-      document.title = newTitle;
+      } else if (!this.hasValidTitle) {
+        // Only try again if we haven't found a valid title yet
+        setTimeout(() => this.updateTitle(), 1000);
+      }
+      // If we already have a valid title, don't override it
+    } else {
+      // Reset when not on a watch page
+      this.hasValidTitle = false;
     }
   }
 
@@ -217,13 +110,11 @@ class TitleflixContentScript {
           break;
         }
         
-        // Check for title element changes
+        // Check specifically for video title element changes
         if (mutation.target instanceof Element) {
           const target = mutation.target;
-          if (target.matches('[data-uia*="title"]') || 
-              target.closest('[data-uia*="title"]') ||
-              target.matches('.video-title') ||
-              target.closest('.video-title')) {
+          if (target.matches('[data-uia="video-title"]') || 
+              target.closest('[data-uia="video-title"]')) {
             shouldUpdate = true;
             break;
           }
