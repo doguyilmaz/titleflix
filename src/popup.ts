@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Update enable toggle state and status
-  updateToggleState(enableToggle, settings.titleflixEnabled !== false, isNetflix);
+  updateToggleState(enableToggle, settings.titleflixEnabled !== false, isNetflix, true);
   updateStatus(statusElement, statusContent, isNetflix, settings.titleflixEnabled !== false);
 
   // Enable toggle click handler
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const newState = !enableToggle.classList.contains('active');
     await chrome.storage.local.set({ titleflixEnabled: newState });
     
-    updateToggleState(enableToggle, newState, isNetflix);
+    updateToggleState(enableToggle, newState, isNetflix, false);
     updateStatus(statusElement, statusContent, isNetflix, newState);
     
     // Reload the Netflix tab to apply changes
@@ -130,9 +130,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  function updateToggleState(toggle: HTMLElement, enabled: boolean, onNetflix: boolean): void {
-    toggle.classList.toggle('active', enabled);
-    toggle.classList.toggle('disabled', !onNetflix);
+  function updateToggleState(toggle: HTMLElement, enabled: boolean, onNetflix: boolean, isInitial = false): void {
+    if (isInitial) {
+      // Prevent transition on initial load
+      toggle.classList.add('no-transition');
+      toggle.classList.toggle('active', enabled);
+      toggle.classList.toggle('disabled', !onNetflix);
+      
+      // Re-enable transitions after a brief moment
+      setTimeout(() => {
+        toggle.classList.remove('no-transition');
+      }, 50);
+    } else {
+      toggle.classList.toggle('active', enabled);
+      toggle.classList.toggle('disabled', !onNetflix);
+    }
   }
 
   function updateStatus(
