@@ -1,6 +1,8 @@
 interface StorageData {
   titleflixEnabled?: boolean;
   theme?: 'auto' | 'light' | 'dark';
+  currentlyWatching?: string | null;
+  isWatching?: boolean;
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -11,27 +13,36 @@ document.addEventListener('DOMContentLoaded', async () => {
   const themeLight = document.getElementById('themeLight');
   const themeDark = document.getElementById('themeDark');
 
-  if (!statusElement || !statusContent || !enableToggle || !themeAuto || !themeLight || !themeDark) {
+  if (
+    !statusElement ||
+    !statusContent ||
+    !enableToggle ||
+    !themeAuto ||
+    !themeLight ||
+    !themeDark
+  ) {
     console.error('Required elements not found');
     return;
   }
 
   // Load saved settings
   const settings = await loadSettings();
-  
+
   // Detect and save system theme for background script
   await detectAndSaveSystemTheme();
-  
+
   // Apply theme
   applyTheme(settings.theme || 'auto');
   updateThemeButtons(settings.theme || 'auto');
 
-  // Check if we're on Netflix
+  // Check if we're on Netflix and get URL info
   let isNetflix = false;
+  let isWatchPage = false;
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab?.url) {
       isNetflix = tab.url.includes('netflix.com');
+      isWatchPage = tab.url.includes('/watch/');
     }
   } catch (error) {
     console.error('Error getting tab info:', error);
@@ -39,18 +50,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Update enable toggle state and status
   updateToggleState(enableToggle, settings.titleflixEnabled !== false, isNetflix, true);
-  updateStatus(statusElement, statusContent, isNetflix, settings.titleflixEnabled !== false);
+  updateStatus(
+    statusElement,
+    statusContent,
+    isNetflix,
+    isWatchPage,
+    settings.titleflixEnabled !== false,
+    settings
+  );
 
   // Enable toggle click handler
   enableToggle.addEventListener('click', async () => {
     if (!isNetflix) return; // Don't allow toggle if not on Netflix
-    
+
     const newState = !enableToggle.classList.contains('active');
     await chrome.storage.local.set({ titleflixEnabled: newState });
-    
+
     updateToggleState(enableToggle, newState, isNetflix, false);
-    updateStatus(statusElement, statusContent, isNetflix, newState);
-    
+    const updatedSettings = await loadSettings();
+    updateStatus(statusElement, statusContent, isNetflix, isWatchPage, newState, updatedSettings);
+
     // Reload the Netflix tab to apply changes
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -69,7 +88,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function loadSettings(): Promise<StorageData> {
     try {
-      return await chrome.storage.local.get(['titleflixEnabled', 'theme']);
+      return await chrome.storage.local.get([
+        'titleflixEnabled',
+        'theme',
+        'currentlyWatching',
+        'isWatching',
+      ]);
     } catch {
       return {};
     }
@@ -83,8 +107,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function updateThemeButtons(activeTheme: 'auto' | 'light' | 'dark'): void {
-    [themeAuto, themeLight, themeDark].forEach(btn => btn?.classList.remove('active'));
-    
+    [themeAuto, themeLight, themeDark].forEach((btn) => btn?.classList.remove('active'));
+
     switch (activeTheme) {
       case 'auto':
         themeAuto?.classList.add('active');
@@ -102,7 +126,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await chrome.storage.local.set({ theme });
     applyTheme(theme);
     updateThemeButtons(theme);
-    
+
     // Notify background script to update icon
     try {
       await chrome.runtime.sendMessage({ type: 'THEME_CHANGED', theme });
@@ -115,7 +139,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       await chrome.storage.local.set({ systemTheme: isDark ? 'dark' : 'light' });
-      
+
       // Immediately update icon if we're on auto theme
       const settings = await loadSettings();
       if (!settings.theme || settings.theme === 'auto') {
@@ -130,13 +154,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  function updateToggleState(toggle: HTMLElement, enabled: boolean, onNetflix: boolean, isInitial = false): void {
+  function updateToggleState(
+    toggle: HTMLElement,
+    enabled: boolean,
+    onNetflix: boolean,
+    isInitial = false
+  ): void {
     if (isInitial) {
       // Prevent transition on initial load
       toggle.classList.add('no-transition');
       toggle.classList.toggle('active', enabled);
       toggle.classList.toggle('disabled', !onNetflix);
-      
+
       // Re-enable transitions after a brief moment
       setTimeout(() => {
         toggle.classList.remove('no-transition');
@@ -148,18 +177,37 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function updateStatus(
-    statusEl: HTMLElement, 
-    contentEl: HTMLElement, 
-    onNetflix: boolean, 
-    enabled: boolean
+    statusEl: HTMLElement,
+    contentEl: HTMLElement,
+    onNetflix: boolean,
+    onWatchPage: boolean,
+    enabled: boolean,
+    settings: StorageData
   ): void {
     if (onNetflix) {
       if (enabled) {
-        statusEl.className = 'status status-active';
-        contentEl.innerHTML = `
-          <strong>✅ Active on Netflix</strong><br>
-          <small>Tab titles are being enhanced</small>
-        `;
+        if (settings.isWatching && settings.currentlyWatching) {
+          // Currently watching something
+          statusEl.className = 'status status-active';
+          contentEl.innerHTML = `
+            <strong>✅ Active on Netflix</strong><br>
+            <small><strong> ${settings.currentlyWatching}</strong> (Currently Watching)</small>
+          `;
+        } else if (onWatchPage) {
+          // On watch page but no title yet
+          statusEl.className = 'status status-active';
+          contentEl.innerHTML = `
+            <strong>✅ Active on Netflix</strong><br>
+            <small>Loading episode information...</small>
+          `;
+        } else {
+          // On Netflix but not watching
+          statusEl.className = 'status status-active';
+          contentEl.innerHTML = `
+            <strong>✅ Ready on Netflix</strong><br>
+            <small>Start watching to see enhanced titles</small>
+          `;
+        }
       } else {
         statusEl.className = 'status status-inactive';
         contentEl.innerHTML = `

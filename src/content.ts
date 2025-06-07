@@ -56,31 +56,50 @@ class TitleflixContentScript {
 
 
   private async updateTitle(): Promise<void> {
-    // Check if extension is enabled
-    const isEnabled = await this.getExtensionState();
-    if (!isEnabled) {
-      return;
-    }
-
-    const pageInfo = this.detectPageType();
-
-    if (pageInfo.type === 'watch') {
-      if (pageInfo.title) {
-        const newTitle = `${pageInfo.title} - Netflix`;
-        this.hasValidTitle = true;
-        this.lastSetTitle = newTitle;
-        
-        if (document.title !== newTitle) {
-          document.title = newTitle;
-        }
-      } else if (!this.hasValidTitle) {
-        // Only try again if we haven't found a valid title yet
-        setTimeout(() => this.updateTitle(), 1000);
+    try {
+      // Check if extension is enabled
+      const isEnabled = await this.getExtensionState();
+      if (!isEnabled) {
+        return;
       }
-      // If we already have a valid title, don't override it
-    } else {
-      // Reset when not on a watch page
-      this.hasValidTitle = false;
+
+      const pageInfo = this.detectPageType();
+
+      if (pageInfo.type === 'watch') {
+        if (pageInfo.title) {
+          const newTitle = `${pageInfo.title} - Netflix`;
+          this.hasValidTitle = true;
+          this.lastSetTitle = newTitle;
+          
+          if (document.title !== newTitle) {
+            document.title = newTitle;
+          }
+          
+          // Send current watching info to storage for popup
+          await this.setStorageData({ 
+            currentlyWatching: pageInfo.title,
+            isWatching: true 
+          });
+        } else if (!this.hasValidTitle) {
+          // Only try again if we haven't found a valid title yet
+          setTimeout(() => this.updateTitle(), 1000);
+        }
+        // If we already have a valid title, don't override it
+      } else {
+        // Reset when not on a watch page
+        this.hasValidTitle = false;
+        await this.setStorageData({ 
+          currentlyWatching: null,
+          isWatching: false 
+        });
+      }
+    } catch (error) {
+      // Extension context invalidated - silently stop operations
+      if (error instanceof Error && error.message.includes('Extension context invalidated')) {
+        this.destroy();
+        return;
+      }
+      console.error('TitleFlix error:', error);
     }
   }
 
@@ -88,8 +107,24 @@ class TitleflixContentScript {
     try {
       const result = await chrome.storage.local.get(['titleflixEnabled']);
       return result.titleflixEnabled !== false; // Default to enabled
-    } catch {
+    } catch (error) {
+      // Extension context invalidated
+      if (error instanceof Error && error.message.includes('Extension context invalidated')) {
+        throw error;
+      }
       return true; // Default to enabled if storage fails
+    }
+  }
+
+  private async setStorageData(data: any): Promise<void> {
+    try {
+      await chrome.storage.local.set(data);
+    } catch (error) {
+      // Extension context invalidated
+      if (error instanceof Error && error.message.includes('Extension context invalidated')) {
+        throw error;
+      }
+      // Silently fail for other storage errors
     }
   }
 
@@ -123,7 +158,7 @@ class TitleflixContentScript {
 
       if (shouldUpdate) {
         // Debounce updates
-        setTimeout(async () => await this.updateTitle(), 500);
+        setTimeout(() => this.updateTitle().catch(() => {}), 500);
       }
     });
 
@@ -135,7 +170,7 @@ class TitleflixContentScript {
 
     // Also listen for popstate events (back/forward navigation)
     window.addEventListener('popstate', () => {
-      setTimeout(async () => await this.updateTitle(), 100);
+      setTimeout(() => this.updateTitle().catch(() => {}), 100);
     });
 
     // Listen for pushstate/replacestate (SPA navigation)
@@ -147,14 +182,14 @@ class TitleflixContentScript {
       originalPushState.apply(history, args);
       // Reset title state on navigation
       self.hasValidTitle = false;
-      setTimeout(async () => await self.updateTitle(), 100);
+      setTimeout(() => self.updateTitle().catch(() => {}), 100);
     };
 
     history.replaceState = function(...args) {
       originalReplaceState.apply(history, args);
       // Reset title state on navigation
       self.hasValidTitle = false;
-      setTimeout(async () => await self.updateTitle(), 100);
+      setTimeout(() => self.updateTitle().catch(() => {}), 100);
     };
   }
 
