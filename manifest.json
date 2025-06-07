@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Titleflix",
   "version": "1.0.0",
-  "description": "Changes Netflix tab titles for better bookmarking",
+  "description": "Changes Netflix tab titles for better bookmarking.",
   "permissions": ["activeTab", "storage"],
   "background": {
     "service_worker": "background.js"

@@ -1,15 +1,35 @@
 {
   "name": "titleflix",
   "version": "1.0.0",
-  "description": "Chrome extension to change Netflix tab titles for better bookmarking",
+  "description": "Chrome extension to change Netflix tab titles for better bookmarking.",
+  "author": "Dogu Yilmaz <hello@doguyilmaz.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/doguyilmaz/titleflix",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/doguyilmaz/titleflix.git"
+  },
+  "bugs": {
+    "url": "https://github.com/doguyilmaz/titleflix/issues"
+  },
+  "keywords": [
+    "chrome-extension",
+    "netflix",
+    "bookmarks",
+    "browser",
+    "productivity",
+    "streaming"
+  ],
   "type": "module",
-  "private": true,
+  "private": false,
   "scripts": {
     "build": "bun run build:ts && bun run build:extension",
     "build:ts": "tsc",
     "build:extension": "cp manifest.json dist/ && cp src/popup.html dist/ && cp -r icons dist/",
+    "package": "bun run build && cd dist && zip -r ../titleflix-v$npm_package_version.zip .",
     "dev": "tsc --watch",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -17,5 +37,8 @@
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
