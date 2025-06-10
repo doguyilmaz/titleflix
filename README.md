@@ -2,7 +2,7 @@
 
 > Transform your Netflix browsing experience with meaningful tab titles and better bookmarks!
 
-[![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-blue?logo=google-chrome)](https://chromewebstore.google.com/detail/titleflix)
+[![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-blue?logo=google-chrome)](https://chromewebstore.google.com/detail/titleflix/ehdaglecfgfanilnanmcmcljdljhgfec)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Author](https://img.shields.io/badge/Author-Dogu%20Yilmaz-blue)](https://doguyilmaz.com)
@@ -50,7 +50,7 @@ Titleflix automatically detects what you're watching and updates the tab title t
 ## 🛠️ Installation
 
 ### Option 1: Chrome Web Store (Recommended)
-1. Visit the [Chrome Web Store](https://chromewebstore.google.com/detail/titleflix)
+1. Visit the [Chrome Web Store](https://chromewebstore.google.com/detail/titleflix/ehdaglecfgfanilnanmcmcljdljhgfec)
 2. Click "Add to Chrome"
 3. Enjoy better Netflix bookmarks!
 
