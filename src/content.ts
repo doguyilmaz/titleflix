@@ -33,16 +33,16 @@ class TitleflixContentScript {
   }
 
   private extractWatchTitle(): string | undefined {
-    // Look for the exact structure from the HTML: data-uia="video-title" with h4 and span
+    // Primary: Look for video-title container with h4 and span
     const videoTitleContainer = document.querySelector('[data-uia="video-title"]');
     if (videoTitleContainer) {
       const h4 = videoTitleContainer.querySelector('h4');
       const span = videoTitleContainer.querySelector('span');
-      
+
       if (h4?.textContent?.trim()) {
         const showTitle = h4.textContent.trim();
         const episodeTitle = span?.textContent?.trim();
-        
+
         if (episodeTitle) {
           return `${showTitle}: ${episodeTitle}`;
         }
@@ -50,10 +50,29 @@ class TitleflixContentScript {
       }
     }
 
-    // No fallback - return undefined if we can't find the proper video title element
+    // Fallback 1: Look for title in player overlay
+    const overlayTitle = document.querySelector(
+      '.watch-video--player-view [data-uia="video-title"] h4, .ltr-bjn8wh h4, .video-title h4'
+    );
+    if (overlayTitle?.textContent?.trim()) {
+      const titleText = overlayTitle.textContent.trim();
+      const episodeSpan = overlayTitle.parentElement?.querySelector('span');
+      if (episodeSpan?.textContent?.trim()) {
+        return `${titleText}: ${episodeSpan.textContent.trim()}`;
+      }
+      return titleText;
+    }
+
+    // Fallback 2: Look for any h4 in overlay areas
+    const anyH4 = document.querySelector(
+      '.watch-video--player-view h4, .ltr-1nvcw39 h4, .overlay h4'
+    );
+    if (anyH4?.textContent?.trim()) {
+      return anyH4.textContent.trim();
+    }
+
     return undefined;
   }
-
 
   private async updateTitle(): Promise<void> {
     try {
@@ -70,15 +89,15 @@ class TitleflixContentScript {
           const newTitle = `${pageInfo.title} - Netflix`;
           this.hasValidTitle = true;
           this.lastSetTitle = newTitle;
-          
+
           if (document.title !== newTitle) {
             document.title = newTitle;
           }
-          
+
           // Send current watching info to storage for popup
-          await this.setStorageData({ 
+          await this.setStorageData({
             currentlyWatching: pageInfo.title,
-            isWatching: true 
+            isWatching: true,
           });
         } else if (!this.hasValidTitle) {
           // Only try again if we haven't found a valid title yet
@@ -88,9 +107,9 @@ class TitleflixContentScript {
       } else {
         // Reset when not on a watch page
         this.hasValidTitle = false;
-        await this.setStorageData({ 
+        await this.setStorageData({
           currentlyWatching: null,
-          isWatching: false 
+          isWatching: false,
         });
       }
     } catch (error) {
@@ -144,12 +163,14 @@ class TitleflixContentScript {
           shouldUpdate = true;
           break;
         }
-        
+
         // Check specifically for video title element changes
         if (mutation.target instanceof Element) {
           const target = mutation.target;
-          if (target.matches('[data-uia="video-title"]') || 
-              target.closest('[data-uia="video-title"]')) {
+          if (
+            target.matches('[data-uia="video-title"]') ||
+            target.closest('[data-uia="video-title"]')
+          ) {
             shouldUpdate = true;
             break;
           }
@@ -165,7 +186,7 @@ class TitleflixContentScript {
     this.observer.observe(document, {
       childList: true,
       subtree: true,
-      attributes: false
+      attributes: false,
     });
 
     // Also listen for popstate events (back/forward navigation)
@@ -178,14 +199,14 @@ class TitleflixContentScript {
     const originalReplaceState = history.replaceState;
     const self = this;
 
-    history.pushState = function(...args) {
+    history.pushState = function (...args) {
       originalPushState.apply(history, args);
       // Reset title state on navigation
       self.hasValidTitle = false;
       setTimeout(() => self.updateTitle().catch(() => {}), 100);
     };
 
-    history.replaceState = function(...args) {
+    history.replaceState = function (...args) {
       originalReplaceState.apply(history, args);
       // Reset title state on navigation
       self.hasValidTitle = false;
