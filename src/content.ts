@@ -33,20 +33,40 @@ class TitleflixContentScript {
   }
 
   private extractWatchTitle(): string | undefined {
-    // Primary: Look for video-title container with h4 and span
+    // Primary: Look for video-title container with h4 and span(s)
     const videoTitleContainer = document.querySelector('[data-uia="video-title"]');
     if (videoTitleContainer) {
       const h4 = videoTitleContainer.querySelector('h4');
-      const span = videoTitleContainer.querySelector('span');
 
       if (h4?.textContent?.trim()) {
         const showTitle = h4.textContent.trim();
-        const episodeTitle = span?.textContent?.trim();
 
-        if (episodeTitle) {
-          return `${showTitle}: ${episodeTitle}`;
+        // Get all spans and combine them for full episode info
+        const spans = videoTitleContainer.querySelectorAll('span');
+        const episodeParts: string[] = [];
+
+        for (let i = 0; i < spans.length; i++) {
+          const span = spans[i];
+          if (span) {
+            const spanText = span.textContent?.trim();
+            if (spanText && spanText !== showTitle) {
+              episodeParts.push(spanText);
+            }
+          }
         }
-        return showTitle;
+
+        if (episodeParts.length > 0) {
+          // Join all episode parts (e.g., "E5" + "○△□" = "E5 ○△□")
+          const fullEpisodeInfo = episodeParts.join(' ');
+          // Only return if we have both show title and episode info
+          if (showTitle && fullEpisodeInfo) {
+            return `${showTitle}: ${fullEpisodeInfo}`;
+          }
+        }
+        // Only return show title if we have a proper show name (not just symbols)
+        if (showTitle && showTitle.length > 2 && !showTitle.match(/^[○△□\s]+$/)) {
+          return showTitle;
+        }
       }
     }
 
