@@ -50,25 +50,68 @@ class TitleflixContentScript {
       }
     }
 
-    // Fallback 1: Look for title in player overlay
-    const overlayTitle = document.querySelector(
-      '.watch-video--player-view [data-uia="video-title"] h4, .ltr-bjn8wh h4, .video-title h4'
-    );
-    if (overlayTitle?.textContent?.trim()) {
-      const titleText = overlayTitle.textContent.trim();
-      const episodeSpan = overlayTitle.parentElement?.querySelector('span');
-      if (episodeSpan?.textContent?.trim()) {
-        return `${titleText}: ${episodeSpan.textContent.trim()}`;
+    // Fallback 1: Look for episode info in various overlay structures
+    const episodeContainers = [
+      // Bottom overlay patterns when controls are visible
+      '.watch-video--bottom-controls-container [data-uia="video-title"]',
+      '.ltr-1m81c36 [data-uia="video-title"]',
+      // Info overlay patterns when visible
+      '.watch-video--flag-container',
+      '.ltr-gpipej',
+      // General player overlay patterns
+      '.watch-video--player-view [data-uia="video-title"]',
+      '.ltr-bjn8wh',
+      '.video-title',
+    ];
+
+    for (const selector of episodeContainers) {
+      const container = document.querySelector(selector);
+      if (container) {
+        const h4 = container.querySelector('h4');
+
+        if (h4?.textContent?.trim()) {
+          const showTitle = h4.textContent.trim();
+
+          // Look for episode info in span elements - combine all spans for full episode info
+          const spans = container.querySelectorAll('span');
+          const episodeParts: string[] = [];
+
+          for (let i = 0; i < spans.length; i++) {
+            const span = spans[i];
+            if (span) {
+              const spanText = span.textContent?.trim();
+              if (spanText && spanText !== showTitle) {
+                episodeParts.push(spanText);
+              }
+            }
+          }
+
+          if (episodeParts.length > 0) {
+            // Join all episode parts (e.g., "E5" + "○△□" = "E5 ○△□")
+            const fullEpisodeInfo = episodeParts.join(' ');
+            return `${showTitle}: ${fullEpisodeInfo}`;
+          }
+
+          return showTitle;
+        }
       }
-      return titleText;
     }
 
-    // Fallback 2: Look for any h4 in overlay areas
-    const anyH4 = document.querySelector(
-      '.watch-video--player-view h4, .ltr-1nvcw39 h4, .overlay h4'
-    );
-    if (anyH4?.textContent?.trim()) {
-      return anyH4.textContent.trim();
+    // Fallback 2: Look for any visible title elements
+    const titleSelectors = [
+      'h4[data-uia*="title"]',
+      '.player-overlay h4',
+      '.video-overlay h4',
+      '[class*="title"] h4',
+      '.watch-video--player-view h4',
+      '.ltr-1nvcw39 h4',
+    ];
+
+    for (const selector of titleSelectors) {
+      const element = document.querySelector(selector);
+      if (element?.textContent?.trim()) {
+        return element.textContent.trim();
+      }
     }
 
     return undefined;
