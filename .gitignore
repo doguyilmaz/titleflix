@@ -31,3 +31,5 @@ promotional-images/
 
 # Bun specific
 .bun/
+
+temp/
