@@ -11,7 +11,9 @@
     "service_worker": "background.js"
   },
   "host_permissions": [
-    "*://*.netflix.com/*"
+    "*://*.netflix.com/*",
+    "https://www.google-analytics.com/*",
+    "https://www.googletagmanager.com/*"
   ],
   "content_scripts": [
     {

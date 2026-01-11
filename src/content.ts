@@ -3,6 +3,18 @@ interface NetflixPageType {
   title?: string;
 }
 
+// Track title updates via message to background script
+async function trackTitleUpdate(title: string): Promise<void> {
+  try {
+    await chrome.runtime.sendMessage({
+      type: 'TRACK_TITLE_UPDATE',
+      title,
+    });
+  } catch {
+    // Silently fail if background script is unavailable
+  }
+}
+
 class TitleflixContentScript {
   private originalTitle: string;
   private observer: MutationObserver | null = null;
@@ -228,6 +240,8 @@ class TitleflixContentScript {
           // Always update if title changed or if current title is invalid
           if (document.title !== newTitle || isCurrentTitleInvalid) {
             document.title = newTitle;
+            // Track title update
+            trackTitleUpdate(pageInfo.title).catch(() => {});
           }
 
           // Send current watching info to storage for popup

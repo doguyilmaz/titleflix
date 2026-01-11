@@ -5,6 +5,17 @@ interface StorageData {
   isWatching?: boolean;
 }
 
+// Helper function to track events with gtag
+function trackEvent(eventName: string, params?: Record<string, any>): void {
+  const gtag = (window as any).gtag;
+  if (typeof gtag === 'function') {
+    gtag('event', eventName, params);
+    console.log('[Analytics] Event tracked:', eventName, params);
+  } else {
+    console.warn('[Analytics] gtag not loaded yet');
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const statusElement = document.getElementById('status');
   const statusContent = document.getElementById('status-content');
@@ -24,6 +35,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.error('Required elements not found');
     return;
   }
+
+  // Track popup opened
+  trackEvent('popup_opened');
 
   // Load saved settings
   const settings = await loadSettings();
@@ -65,6 +79,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const newState = !enableToggle.classList.contains('active');
     await chrome.storage.local.set({ titleflixEnabled: newState });
+
+    // Track toggle event
+    trackEvent('extension_toggled', { enabled: newState });
 
     updateToggleState(enableToggle, newState, isNetflix, false);
     const updatedSettings = await loadSettings();
@@ -126,6 +143,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     await chrome.storage.local.set({ theme });
     applyTheme(theme);
     updateThemeButtons(theme);
+
+    // Track theme change
+    trackEvent('theme_changed', { theme });
 
     // Notify background script to update icon
     try {
