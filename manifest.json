@@ -1,38 +1,45 @@
 {
   "manifest_version": 3,
   "name": "Titleflix",
-  "version": "1.1.3",
-  "description": "Changes Netflix tab titles for better bookmarking.",
-  "permissions": [
-    "activeTab",
-    "storage"
-  ],
+  "version": "2.0.0",
+  "description": "Gives Netflix tabs and bookmarks the real name of what you're watching, like \"Dark: S1:E2 Lies\".",
+  "minimum_chrome_version": "111",
+  "permissions": ["storage", "scripting"],
+  "host_permissions": ["https://www.netflix.com/*"],
   "background": {
     "service_worker": "background.js"
   },
-  "host_permissions": [
-    "*://*.netflix.com/*"
-  ],
   "content_scripts": [
     {
-      "matches": [
-        "*://*.netflix.com/*"
-      ],
-      "js": [
-        "content.js"
-      ],
+      "matches": ["https://www.netflix.com/*"],
+      "js": ["bridge.js"],
+      "world": "MAIN",
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://www.netflix.com/*"],
+      "js": ["content.js"],
       "run_at": "document_end"
     }
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Titleflix"
+    "default_title": "Titleflix",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
   "icons": {
-    "16": "icons/titleflix16_dark.png",
-    "32": "icons/titleflix32_dark.png",
-    "48": "icons/titleflix48_dark.png",
-    "128": "icons/titleflix128_dark.png"
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'none'"
   },
   "homepage_url": "https://github.com/doguyilmaz/titleflix"
 }

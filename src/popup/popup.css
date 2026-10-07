@@ -1,0 +1,362 @@
+:root {
+  --bg: #faf8f4;
+  --surface: #ffffff;
+  --surface-2: #f2eee7;
+  --border: #e6e0d6;
+  --text: #1a1724;
+  --muted: #6c667c;
+  --accent: #e8900c;
+  --accent-soft: #fff1da;
+  --knob: #ffffff;
+  --track: #d6d0c5;
+  --live: #0f9d63;
+  --warn: #c77700;
+  --off: #8a8496;
+  --error: #d64545;
+  --shadow: 0 1px 2px rgb(26 23 36 / 6%), 0 4px 16px rgb(26 23 36 / 6%);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #100e17;
+    --surface: #1a1724;
+    --surface-2: #24202f;
+    --border: #2f2a3d;
+    --text: #f3f0ea;
+    --muted: #a39db3;
+    --accent: #ffb547;
+    --accent-soft: #3a2c14;
+    --knob: #f3f0ea;
+    --track: #3b3549;
+    --live: #3ddc97;
+    --warn: #ffb547;
+    --off: #8d879c;
+    --error: #ff7a7a;
+    --shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 6px 20px rgb(0 0 0 / 25%);
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  width: 340px;
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  color: var(--text);
+  font: 13px/1.45 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+p {
+  margin: 0;
+}
+
+/* Brand */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.brand-mark {
+  flex: none;
+  border-radius: 9px;
+}
+
+.brand-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.brand h1 {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.brand p {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.version {
+  flex: none;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Status card */
+.now {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.now-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--off);
+  flex: none;
+}
+
+.now[data-state='live'] .dot {
+  background: var(--live);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--live) 22%, transparent);
+}
+
+.now[data-state='searching'] .dot,
+.now[data-state='loading'] .dot {
+  background: var(--warn);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.now[data-state='unreachable'] .dot {
+  background: var(--error);
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.tab-preview {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  background: var(--surface-2);
+  position: relative;
+}
+
+.tab-preview::after {
+  content: '';
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  bottom: 0;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.tab-preview[hidden] {
+  display: none;
+}
+
+.tab-favicon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  border-radius: 4px;
+  background: linear-gradient(160deg, #2b2440, #15121f);
+  box-shadow: inset 0 0 0 4px transparent;
+  position: relative;
+}
+
+.tab-favicon::after {
+  content: '';
+  position: absolute;
+  inset: 4px 4px 3px;
+  background: var(--accent);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 72%, 0 100%);
+}
+
+.tab-title {
+  min-width: 0;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.now-hint {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.now-hint:empty {
+  display: none;
+}
+
+.btn {
+  margin-top: 12px;
+  padding: 7px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #1a1206;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn:hover {
+  filter: brightness(1.06);
+}
+
+.btn[hidden] {
+  display: none;
+}
+
+/* Settings */
+.settings {
+  margin-top: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  cursor: pointer;
+}
+
+.row + .row {
+  border-top: 1px solid var(--border);
+}
+
+.row:hover {
+  background: color-mix(in srgb, var(--surface-2) 60%, transparent);
+}
+
+.row-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.row-title {
+  font-weight: 600;
+}
+
+.row-sub {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings.is-disabled .row:not(:first-child) {
+  opacity: 0.5;
+}
+
+.switch {
+  appearance: none;
+  flex: none;
+  position: relative;
+  width: 38px;
+  height: 22px;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--track);
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+}
+
+.switch::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--knob);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 25%);
+  transition: transform 0.18s ease;
+}
+
+.switch:checked {
+  background: var(--accent);
+}
+
+.switch:checked::before {
+  transform: translateX(16px);
+}
+
+.switch:focus-visible,
+.btn:focus-visible,
+.foot a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.no-motion .switch,
+.no-motion .switch::before {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .switch,
+  .switch::before {
+    transition: none;
+  }
+  .dot {
+    animation: none !important;
+  }
+}
+
+/* Footer */
+.foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 0 2px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.foot nav {
+  display: flex;
+  gap: 10px;
+  flex: none;
+}
+
+.foot a {
+  color: var(--muted);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--muted) 45%, transparent);
+  text-underline-offset: 2px;
+}
+
+.foot a:hover {
+  color: var(--text);
+}

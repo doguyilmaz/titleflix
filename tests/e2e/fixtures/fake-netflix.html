@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Netflix</title>
+    <style>
+      body { margin: 0; background: #141414; color: #fff; font-family: sans-serif; }
+      .watch-video { position: relative; width: 100vw; height: 100vh; }
+      [data-uia='video-title'] { position: absolute; bottom: 20px; left: 20px; }
+      [data-uia='evidence-overlay'] { position: absolute; top: 30%; left: 10%; }
+    </style>
+  </head>
+  <body>
+    <div id="appMountPoint"></div>
+    <script>
+      /*
+       * A small stand-in for the Netflix web app, used by the end-to-end tests.
+       * It reproduces the behaviour Titleflix depends on:
+       *  - client-side routing with history.pushState (invisible to content scripts),
+       *  - the player's title DOM that only exists while controls are visible,
+       *  - the "You're watching" pause overlay,
+       *  - player metadata in netflix.appContext.state.playerApp.getState(),
+       *  - Netflix resetting document.title on its own.
+       * Behaviour is configured per test through window.__FAKE_NETFLIX__ (set by an init script).
+       */
+      (() => {
+        const config = Object.assign(
+          {
+            playerData: true,
+            playerDataDelayMs: 300,
+            controls: 'hidden', // 'hidden' | 'visible'
+            overlay: false,
+            titleFight: false,
+            mediaSession: false,
+            staleControlsMs: 0,
+          },
+          window.__FAKE_NETFLIX__ || {},
+        );
+
+        const SHOW = {
+          type: 'show',
+          title: 'Stranger Things',
+          id: 80057281,
+          currentEpisode: 80077209,
+          seasons: [
+            {
+              seq: 1,
+              shortName: 'S1',
+              episodes: [
+                { id: 80077209, episodeId: 80077209, seq: 1, title: 'Chapter One: The Vanishing of Will Byers' },
+                { id: 80077210, episodeId: 80077210, seq: 2, title: 'Chapter Two: The Weirdo on Maple Street' },
+                { id: 80077211, episodeId: 80077211, seq: 3, title: 'Chapter Three: Holly, Jolly' },
+              ],
+            },
+            {
+              seq: 2,
+              shortName: 'S2',
+              episodes: [{ id: 80117800, episodeId: 80117800, seq: 1, title: 'Chapter One: MADMAX' }],
+            },
+          ],
+        };
+        const DARK = {
+          type: 'show',
+          title: 'Dark',
+          id: 80100172,
+          seasons: [
+            {
+              seq: 1,
+              episodes: [
+                { id: 80100173, episodeId: 80100173, seq: 1, title: 'Secrets' },
+                { id: 80100174, episodeId: 80100174, seq: 2, title: 'Lies' },
+              ],
+            },
+          ],
+        };
+        const MOVIES = {
+          80211627: { type: 'movie', title: '1917', id: 80211627 },
+          80000666: { type: 'movie', title: '<img src=x onerror="window.__xss=1">', id: 80000666 },
+        };
+        const EPISODES = [SHOW, DARK].flatMap((show) =>
+          show.seasons.flatMap((s) => s.episodes.map((e) => ({ ...e, season: s.seq, show }))),
+        );
+
+        function lookup(id) {
+          const ep = EPISODES.find((e) => String(e.id) === String(id));
+          if (ep) return { kind: 'episode', ep, video: ep.show };
+          const movie = MOVIES[id];
+          return movie ? { kind: 'movie', video: movie } : null;
+        }
+
+        // ---- Player state (what the main-world bridge reads) ----------------------------
+        const videoMetadata = {};
+        window.netflix = {
+          appContext: {
+            state: {
+              playerApp: {
+                getState: () => ({ videoPlayer: { videoMetadata } }),
+              },
+            },
+          },
+        };
+
+        // ---- Rendering ------------------------------------------------------------------
+        const root = document.getElementById('appMountPoint');
+        let controlsTimer = null;
+        let current = null;
+
+        function el(tag, attrs, ...children) {
+          const node = document.createElement(tag);
+          for (const [k, v] of Object.entries(attrs || {})) node.setAttribute(k, v);
+          for (const child of children) node.append(child);
+          return node;
+        }
+
+        function renderBrowse() {
+          document.title = 'Home - Netflix';
+          root.replaceChildren(
+            el('h1', {}, 'Home'),
+            ...EPISODES.map((e) => el('a', { href: `/watch/${e.id}`, 'data-testid': `ep-${e.id}` }, e.title)),
+            ...Object.values(MOVIES).map((m) => el('a', { href: `/watch/${m.id}`, 'data-testid': `movie-${m.id}` }, m.title)),
+          );
+        }
+
+        function renderWatch(id) {
+          document.title = 'Netflix';
+          const previous = current;
+          current = lookup(id);
+          const player = el('div', { class: 'watch-video--player-view' }, el('video', {}));
+          root.replaceChildren(el('div', { class: 'watch-video', 'data-uia': 'watch-video' }, player));
+
+          if (config.playerData && current) {
+            setTimeout(() => {
+              videoMetadata[current.video.id] = { _metadata: { video: current.video } };
+            }, config.playerDataDelayMs);
+          }
+
+          if (config.mediaSession && current && 'mediaSession' in navigator) {
+            navigator.mediaSession.metadata = new MediaMetadata({ title: current.video.title });
+          }
+
+          if (config.staleControlsMs && previous) {
+            // Netflix briefly keeps the previous episode's controls after "next episode".
+            showControls(previous);
+            setTimeout(() => showControls(current), config.staleControlsMs);
+          } else if (config.controls === 'visible') {
+            showControls(current);
+          }
+          if (config.overlay) pause();
+        }
+
+        function showControls(entry = current, hideAfterMs = 0) {
+          const player = document.querySelector('.watch-video--player-view');
+          if (!player || !entry) return;
+          hideControls();
+          const children =
+            entry.kind === 'episode'
+              ? [el('h4', {}, entry.video.title), el('span', {}, `E${entry.ep.seq}`), el('span', {}, entry.ep.title)]
+              : [el('h4', {}, entry.video.title)];
+          const controls = el(
+            'div',
+            { class: 'watch-video--bottom-controls-container' },
+            el('div', { 'data-uia': 'video-title' }, ...children),
+            el('span', { class: 'rating' }, 'TV-14'),
+          );
+          player.append(controls);
+          if (hideAfterMs) controlsTimer = setTimeout(hideControls, hideAfterMs);
+        }
+
+        function hideControls() {
+          clearTimeout(controlsTimer);
+          document.querySelector('.watch-video--bottom-controls-container')?.remove();
+        }
+
+        function pause() {
+          const player = document.querySelector('.watch-video--player-view');
+          if (!player || !current) return;
+          player.append(
+            el(
+              'div',
+              { 'data-uia': 'evidence-overlay' },
+              el('p', {}, "You're watching"),
+              el('h2', {}, current.video.title),
+              el('span', {}, 'RATED 16+'),
+            ),
+          );
+        }
+
+        function route() {
+          const match = /^\/watch\/(\d+)/.exec(location.pathname);
+          if (match) renderWatch(match[1]);
+          else renderBrowse();
+        }
+
+        function navigate(path) {
+          history.pushState({}, '', path);
+          route();
+        }
+
+        document.addEventListener('click', (event) => {
+          const link = event.target.closest('a[href^="/"]');
+          if (!link) return;
+          event.preventDefault();
+          navigate(link.getAttribute('href'));
+        });
+        window.addEventListener('popstate', route);
+
+        if (config.titleFight) {
+          setInterval(() => {
+            document.title = location.pathname.startsWith('/watch') ? 'Netflix' : 'Home - Netflix';
+          }, 150);
+        }
+
+        window.__fake = {
+          navigate,
+          showControls: (hideAfterMs) => showControls(current, hideAfterMs),
+          hideControls,
+          pause,
+          nextEpisode() {
+            const index = EPISODES.findIndex((e) => current && e.id === current.ep?.id);
+            const next = EPISODES[index + 1];
+            if (next && next.show === current.video) navigate(`/watch/${next.id}`);
+          },
+          setTitle: (t) => (document.title = t),
+        };
+
+        route();
+      })();
+    </script>
+  </body>
+</html>

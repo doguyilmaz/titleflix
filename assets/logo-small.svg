@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <!-- Pixel-fitted variant of logo.svg for 16px and 32px toolbar icons. -->
+  <rect x="0" y="0" width="16" height="16" rx="3.5" fill="#1E1A2C"/>
+  <rect x="0.25" y="0.25" width="15.5" height="15.5" rx="3.25" fill="none" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="0.5"/>
+  <path fill="#FFB13F" d="M3 3h10v3H9.5v7.5L8 12.3l-1.5 1.2V6H3z"/>
+</svg>

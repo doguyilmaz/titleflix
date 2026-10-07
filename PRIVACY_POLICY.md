@@ -1,145 +1,66 @@
 # Privacy Policy for Titleflix
 
-**Last Updated: January 2025**
+**Last updated: October 2026** (applies to version 2.0.0 and later)
 
-## Overview
+Titleflix is a Chrome extension that renames Netflix browser tabs to the show or movie being played, so that bookmarks and tab lists are meaningful.
 
-Titleflix is a Chrome extension that enhances your Netflix browsing experience by changing tab titles to include the content you're watching. This privacy policy explains how Titleflix handles your information.
+## Summary
 
-## The Short Version
+**Titleflix does not collect, transmit, sell or share any data.** It runs entirely inside your browser, only on `www.netflix.com`, and makes no network requests.
 
-**Titleflix does not collect, store, transmit, or share any personal data.** The extension operates entirely on your device and only accesses Netflix pages to read content titles for tab enhancement.
+## What Titleflix reads
 
-## Information We Do NOT Collect
+On `www.netflix.com` pages, Titleflix reads information that is already in the page to work out what is playing:
 
-Titleflix does not collect any of the following:
-- Personal information (name, email, address, phone number)
-- Netflix account information or credentials
-- Viewing history or watch data
-- Browsing data outside of Netflix
-- Location information
-- Device information
-- Usage analytics or telemetry
-- Crash reports or error logs
+- the show or movie title, season, episode number and episode title from Netflix's player data, which Netflix has already loaded in the page;
+- the title shown in the player controls or on the pause screen;
+- the media information Netflix provides to Chrome's media controls.
 
-## Information We Do Collect
+This information is used only to set the tab's title. It is kept in the tab's memory while the tab is open and is never written to storage, sent anywhere, or shared with anyone.
 
-**None.** Titleflix does not collect any information whatsoever.
+## What Titleflix stores
 
-## Local Data Storage
+Titleflix stores three preferences using Chrome's `storage.sync` area:
 
-Titleflix stores minimal data locally on your device using Chrome's storage API:
+- whether tab renaming is on;
+- whether to include season and episode details;
+- whether to add " - Netflix" to the end of titles.
 
-### What is Stored:
-- **Extension enabled/disabled state**: Whether you have the extension turned on or off
-- **Theme preference**: Your choice of Auto, Light, or Dark theme for the extension popup
-- **System theme detection**: Whether your system is in dark mode (used for auto theme switching)
+If you have Chrome Sync turned on, Google syncs these preferences between your own devices as part of Chrome Sync. Titleflix has no server and never receives them.
 
-### Important Notes:
-- This data never leaves your device
-- This data is not transmitted to any servers
-- This data is not shared with any third parties
-- You can clear this data by uninstalling the extension
+Version 1.x kept the title of the video you were watching in local extension storage. Version 2.0 no longer does this and deletes that stored value when it is installed or updated.
 
-## Permissions Explained
+## Permissions
 
-Titleflix requests minimal permissions to function:
+| Permission | Purpose |
+| --- | --- |
+| Host access to `https://www.netflix.com/*` | Read what's playing and set the tab title on Netflix. Titleflix cannot see or change any other website. |
+| `storage` | Save the three preferences listed above. |
+| `scripting` | When Titleflix is installed or updated, start it in Netflix tabs that are already open, so they work without a reload. It only runs Titleflix's own bundled files, and only on Netflix tabs. |
 
-### activeTab
-- **Purpose**: Allows the extension to read the current Netflix tab to detect content titles
-- **Usage**: Only activated when you're viewing Netflix pages
-- **Limitation**: Cannot access other tabs or websites
+## Reporting problems
 
-### storage
-- **Purpose**: Saves your preferences (on/off state, theme choice) locally on your device
-- **Usage**: Stores settings in Chrome's local storage
-- **Limitation**: Data never leaves your device
+The popup's **Report a problem** link opens a new GitHub issue form, pre-filled with the Titleflix version, your browser's user-agent string, and the popup's status. It does not include what you are watching. Nothing is sent unless you choose to submit the issue on GitHub, where GitHub's privacy policy applies.
 
-### Host Permission (*://*.netflix.com/*)
-- **Purpose**: Allows the extension to run only on Netflix websites
-- **Usage**: Enables content title detection and tab title updating
-- **Limitation**: Cannot access any other websites
+## Third parties
 
-## How Titleflix Works
+Titleflix uses no analytics, advertising, tracking, crash reporting or remote code.
 
-1. **Content Detection**: When you visit Netflix, the extension reads the page content to identify what you're watching
-2. **Title Update**: The extension updates your browser tab title to include the content name
-3. **Local Storage**: Your preferences are saved locally on your device
-4. **No Network Activity**: The extension does not make any network requests or transmit data
+## Children
 
-## Third-Party Services
+Titleflix collects no information from anyone, including children under 13.
 
-Titleflix does not use any third-party services, analytics, or tracking tools.
+## Removing Titleflix
 
-## Data Security
+Remove it from `chrome://extensions`. Chrome deletes its stored preferences.
 
-Since Titleflix doesn't collect any data, there's no risk of data breaches or unauthorized access to your information. All functionality operates locally on your device.
+## Changes to this policy
 
-## Children's Privacy
+Changes will be published in this file in the [GitHub repository](https://github.com/doguyilmaz/titleflix) with a new "Last updated" date, and noted in the release notes.
 
-Titleflix does not collect any information from anyone, including children under the age of 13.
+## Contact
 
-## International Users
+- Email: hello@doguyilmaz.com
+- Issues: https://github.com/doguyilmaz/titleflix/issues
 
-Titleflix works for users worldwide and does not collect any data regardless of your location.
-
-## Changes to Netflix
-
-Titleflix only reads publicly visible content titles on Netflix pages. It does not:
-- Modify Netflix functionality
-- Interfere with Netflix's operation
-- Access your Netflix account
-- Change your Netflix viewing experience
-
-## Your Rights
-
-Since we don't collect any data, there's no personal information to:
-- Access or download
-- Correct or update
-- Delete or remove
-- Restrict processing of
-- Port to another service
-
-## Uninstalling Titleflix
-
-To remove all traces of Titleflix:
-1. Go to `chrome://extensions/`
-2. Find Titleflix and click "Remove"
-3. All locally stored preferences will be automatically deleted
-
-## Contact Information
-
-If you have questions about this privacy policy or Titleflix:
-
-- **Email**: hello@doguyilmaz.com
-- **Website**: https://doguyilmaz.com
-- **GitHub Issues**: https://github.com/doguyilmaz/titleflix/issues
-
-## Changes to This Policy
-
-If we ever change this privacy policy, we will:
-- Update the "Last Updated" date above
-- Notify users through the Chrome Web Store update process
-- Post the updated policy in our GitHub repository
-
-## Compliance
-
-This privacy policy is designed to comply with:
-- Chrome Web Store Developer Program Policies
-- General Data Protection Regulation (GDPR)
-- California Consumer Privacy Act (CCPA)
-- Children's Online Privacy Protection Act (COPPA)
-
-## Legal Basis for Processing (GDPR)
-
-Since Titleflix doesn't process any personal data, no legal basis is required under GDPR.
-
-## Conclusion
-
-Titleflix is built with privacy as a core principle. We believe you should be able to enhance your Netflix experience without sacrificing your privacy. If you have any concerns or questions about how Titleflix works, please don't hesitate to contact us.
-
----
-
-**Titleflix - Privacy by Design**
-
-*This privacy policy is effective as of the date listed above and applies to all users of the Titleflix Chrome extension.*
+Titleflix is an independent project and is not affiliated with or endorsed by Netflix, Inc.

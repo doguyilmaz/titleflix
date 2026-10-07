@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Titleflix</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="brand">
+      <img class="brand-mark" src="icons/logo.svg" alt="" width="36" height="36" />
+      <div class="brand-text">
+        <h1>Titleflix</h1>
+        <p>Real names for your Netflix tabs</p>
+      </div>
+      <span class="version" id="version"></span>
+    </header>
+
+    <main>
+      <section class="now" id="now" data-state="loading" aria-live="polite">
+        <div class="now-head">
+          <span class="dot" aria-hidden="true"></span>
+          <span class="now-label" id="statusLabel">Checking this tab…</span>
+        </div>
+        <div class="tab-preview" id="preview" hidden>
+          <span class="tab-favicon" aria-hidden="true"></span>
+          <span class="tab-title" id="previewTitle"></span>
+        </div>
+        <p class="now-hint" id="statusHint"></p>
+        <button class="btn" id="reloadBtn" type="button" hidden>Reload tab</button>
+      </section>
+
+      <section class="settings" aria-label="Settings">
+        <label class="row">
+          <span class="row-text">
+            <span class="row-title">Rename Netflix tabs</span>
+            <span class="row-sub">Off keeps Netflix's own titles</span>
+          </span>
+          <input type="checkbox" class="switch" id="enabled" role="switch" />
+        </label>
+        <label class="row">
+          <span class="row-text">
+            <span class="row-title">Season &amp; episode</span>
+            <span class="row-sub">Dark: S1:E2 Lies</span>
+          </span>
+          <input type="checkbox" class="switch" id="showEpisode" role="switch" />
+        </label>
+        <label class="row">
+          <span class="row-text">
+            <span class="row-title">Netflix suffix</span>
+            <span class="row-sub">Adds “- Netflix” to the end</span>
+          </span>
+          <input type="checkbox" class="switch" id="appendSuffix" role="switch" />
+        </label>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <p>Runs only on netflix.com. Nothing leaves your browser.</p>
+      <nav>
+        <a id="reportLink" href="https://github.com/doguyilmaz/titleflix/issues/new" target="_blank" rel="noopener noreferrer">Report a problem</a>
+        <a href="https://github.com/doguyilmaz/titleflix" target="_blank" rel="noopener noreferrer">Source</a>
+      </nav>
+    </footer>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
