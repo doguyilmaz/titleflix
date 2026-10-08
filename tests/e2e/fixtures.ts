@@ -36,6 +36,7 @@ export const test = base.extend<Fixtures>({
     const context = await chromium.launchPersistentContext('', {
       channel: 'chromium',
       executablePath: process.env.CHROMIUM_PATH || undefined,
+      deviceScaleFactor: Number(process.env.TITLEFLIX_SCALE) || 1,
       args: [`--disable-extensions-except=${EXTENSION_DIR}`, `--load-extension=${EXTENSION_DIR}`],
     });
     // Serve the simulated Netflix app for every www.netflix.com URL; nothing reaches the network.

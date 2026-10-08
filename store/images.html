@@ -1,0 +1,880 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Titleflix store images</title>
+    <style>
+      /* Each .frame is one Chrome Web Store image, rendered at its exact pixel size by images.store.ts. */
+      @font-face {
+        font-family: 'Archivo';
+        src: url('fonts/archivo-latin.woff2') format('woff2');
+        font-weight: 100 900;
+        font-stretch: 62% 125%;
+      }
+      @font-face {
+        font-family: 'Inter';
+        src: url('fonts/inter-latin.woff2') format('woff2');
+        font-weight: 100 900;
+      }
+
+      :root {
+        --ink: #0a0a0a;
+        --frame: #141414;
+        --tab: #262626;
+        --menu: #1d1d1d;
+        --line: #2e2e2e;
+        --text: #f5f5f1;
+        --muted: #a8a8a8;
+        --faint: #6c6c6c;
+        --red: #e50914;
+        --red-hi: #ff2a33;
+        --green: #46d369;
+        --display: 'Archivo', 'Inter', sans-serif;
+        --ui: 'Inter', system-ui, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 40px;
+        display: grid;
+        gap: 40px;
+        justify-items: start;
+        background: #333;
+        font-family: var(--ui);
+        color: var(--text);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .frame {
+        position: relative;
+        overflow: hidden;
+        background:
+          radial-gradient(900px 520px at 88% -8%, rgb(229 9 20 / 30%), transparent 62%),
+          radial-gradient(700px 420px at -5% 108%, rgb(229 9 20 / 12%), transparent 60%),
+          var(--ink);
+      }
+
+      .shot {
+        width: 1280px;
+        height: 800px;
+        padding: 64px 72px;
+        display: flex;
+        flex-direction: column;
+        gap: 40px;
+      }
+
+      .lockup {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-family: var(--display);
+        font-size: 22px;
+        font-weight: 750;
+        letter-spacing: -0.01em;
+      }
+
+      .lockup img {
+        width: 36px;
+        height: 36px;
+      }
+
+      h1 {
+        margin: 0;
+        font-family: var(--display);
+        font-stretch: 88%;
+        font-weight: 800;
+        font-size: 64px;
+        line-height: 1.02;
+        letter-spacing: -0.02em;
+        text-wrap: balance;
+      }
+
+      h1 em {
+        font-style: normal;
+        color: var(--red-hi);
+      }
+
+      .sub {
+        margin: 14px 0 0;
+        max-width: 680px;
+        color: var(--muted);
+        font-size: 22px;
+        line-height: 1.45;
+      }
+
+      .eyebrow {
+        color: var(--faint);
+        font-size: 13px;
+        font-weight: 650;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .eyebrow.red {
+        color: var(--red-hi);
+      }
+
+      /* ---- Chrome-like window pieces ---------------------------------------------------- */
+      .browser {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--frame);
+        overflow: hidden;
+        box-shadow: 0 30px 60px rgb(0 0 0 / 45%);
+      }
+
+      .strip {
+        display: flex;
+        align-items: flex-end;
+        height: 50px;
+        padding: 0 14px;
+        background: #0f0f0f;
+      }
+
+      .ctab {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 262px;
+        height: 40px;
+        padding: 0 12px 0 14px;
+        border-radius: 11px 11px 0 0;
+        color: var(--muted);
+        font-size: 14.5px;
+      }
+
+      .ctab + .ctab:not(.on)::before,
+      .ctab.on + .ctab::before {
+        content: none;
+      }
+
+      .ctab:not(.on):not(:first-child) {
+        box-shadow: -1px 0 0 0 transparent;
+      }
+
+      .sep {
+        width: 1px;
+        height: 20px;
+        margin-bottom: 10px;
+        background: var(--line);
+      }
+
+      .ctab.on {
+        background: var(--tab);
+        color: var(--text);
+      }
+
+      .ctab.on::before,
+      .ctab.on::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        width: 11px;
+        height: 11px;
+      }
+
+      .ctab.on::before {
+        left: -11px;
+        background: radial-gradient(circle at 0 0, transparent 10.5px, var(--tab) 11px);
+      }
+
+      .ctab.on::after {
+        right: -11px;
+        background: radial-gradient(circle at 100% 0, transparent 10.5px, var(--tab) 11px);
+      }
+
+      .fav {
+        flex: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
+        background: linear-gradient(180deg, #ff2a33, #b20710);
+      }
+
+      .ctab .t {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        -webkit-mask-image: linear-gradient(90deg, #000 80%, transparent);
+        mask-image: linear-gradient(90deg, #000 80%, transparent);
+      }
+
+      .x {
+        position: relative;
+        flex: none;
+        width: 16px;
+        height: 16px;
+        color: var(--faint);
+      }
+
+      .x::before,
+      .x::after,
+      .plus::before,
+      .plus::after {
+        content: '';
+        position: absolute;
+        top: 7.25px;
+        left: 3.5px;
+        width: 9px;
+        height: 1.5px;
+        border-radius: 1px;
+        background: currentColor;
+      }
+
+      .x::before {
+        transform: rotate(45deg);
+      }
+
+      .x::after {
+        transform: rotate(-45deg);
+      }
+
+      .plus {
+        position: relative;
+        width: 16px;
+        height: 16px;
+        margin: 0 0 12px 12px;
+        color: var(--faint);
+      }
+
+      .plus::after {
+        transform: rotate(90deg);
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        height: 50px;
+        padding: 0 16px;
+        background: var(--tab);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .nav {
+        display: flex;
+        gap: 14px;
+        color: var(--faint);
+        font-size: 18px;
+        line-height: 1;
+      }
+
+      .omnibox {
+        flex: 1;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        border-radius: 999px;
+        background: #1a1a1a;
+        color: var(--muted);
+        font-size: 14.5px;
+      }
+
+      .omnibox b {
+        color: var(--text);
+        font-weight: 500;
+      }
+
+      /* ---- Frame 1: tab strip before/after --------------------------------------------- */
+      .compare {
+        display: grid;
+        gap: 26px;
+        margin-top: auto;
+        margin-bottom: 70px;
+      }
+
+      .compare .row {
+        display: grid;
+        gap: 12px;
+      }
+
+      .before .browser {
+        opacity: 0.55;
+      }
+
+      .after {
+        position: relative;
+      }
+
+      .hovercard {
+        position: absolute;
+        left: 16px;
+        top: 76px;
+        width: 420px;
+        padding: 14px 16px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #202020;
+        box-shadow: 0 18px 40px rgb(0 0 0 / 55%);
+        font-size: 15px;
+        line-height: 1.4;
+      }
+
+      .hovercard b {
+        display: block;
+        font-weight: 600;
+      }
+
+      .hovercard span {
+        display: block;
+        margin-top: 4px;
+        color: var(--faint);
+        font-size: 13.5px;
+      }
+
+      /* ---- Frame 2: bookmarks ---------------------------------------------------------- */
+      .menus {
+        margin-block: auto;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        gap: 36px;
+      }
+
+      .menu-wrap {
+        display: grid;
+        gap: 12px;
+      }
+
+      .menu {
+        padding: 8px 0;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--menu);
+        box-shadow: 0 24px 50px rgb(0 0 0 / 50%);
+      }
+
+      .menu-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 18px 12px;
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 6px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .folder {
+        width: 16px;
+        height: 12px;
+        border-radius: 2px 3px 3px 3px;
+        background: var(--faint);
+      }
+
+      .item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 42px;
+        padding: 0 18px;
+        font-size: 16px;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+
+      .item span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .menu.dim .item {
+        color: var(--muted);
+      }
+
+      .menu.dim {
+        opacity: 0.6;
+      }
+
+      .arrow {
+        color: var(--red-hi);
+        font-family: var(--display);
+        font-size: 44px;
+        font-weight: 700;
+      }
+
+      /* ---- Frame 3: popup --------------------------------------------------------------- */
+      .split {
+        display: grid;
+        grid-template-columns: 1fr 470px;
+        gap: 56px;
+        height: 100%;
+      }
+
+      .split .copy {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 34px;
+      }
+
+      .points {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 22px;
+      }
+
+      .points li {
+        display: grid;
+        grid-template-columns: 26px 1fr;
+        gap: 14px;
+        font-size: 21px;
+        line-height: 1.4;
+        color: var(--muted);
+      }
+
+      .points li b {
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .points li::before {
+        content: '';
+        width: 10px;
+        height: 10px;
+        margin: 10px 0 0 6px;
+        border-radius: 3px;
+        background: var(--red);
+      }
+
+      .popups {
+        position: relative;
+      }
+
+      .popups img {
+        position: absolute;
+        width: 360px;
+        border-radius: 14px;
+        box-shadow: 0 30px 70px rgb(0 0 0 / 60%), 0 0 0 1px rgb(255 255 255 / 8%);
+      }
+
+      .popups .back {
+        right: -40px;
+        top: 70px;
+        opacity: 0.9;
+      }
+
+      .popups .front {
+        left: 0;
+        top: 0;
+        width: 400px;
+      }
+
+      /* ---- Frame 4: next episode ------------------------------------------------------- */
+      .timeline {
+        display: grid;
+        gap: 0;
+        margin: auto 0;
+        margin-left: 6px;
+      }
+
+      .step {
+        position: relative;
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        align-items: center;
+        gap: 28px;
+        padding: 20px 0;
+      }
+
+      .step::before {
+        content: '';
+        position: absolute;
+        left: 168px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--line);
+      }
+
+      .step:first-child::before {
+        top: 50%;
+      }
+
+      .step:last-child::before {
+        bottom: 50%;
+      }
+
+      .when {
+        text-align: right;
+        color: var(--faint);
+        font-size: 15px;
+        line-height: 1.35;
+      }
+
+      .when b {
+        display: block;
+        color: var(--muted);
+        font-weight: 600;
+        font-size: 16px;
+      }
+
+      .chip {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: fit-content;
+        margin-left: 24px;
+        padding: 14px 20px;
+        border: 1px solid var(--line);
+        border-radius: 12px 12px 4px 4px;
+        background: var(--tab);
+        font-size: 19px;
+        box-shadow: 0 14px 30px rgb(0 0 0 / 40%);
+      }
+
+      .chip::before {
+        content: '';
+        position: absolute;
+        left: -33px;
+        top: 50%;
+        width: 12px;
+        height: 12px;
+        margin-top: -6px;
+        border-radius: 50%;
+        background: var(--ink);
+        border: 2px solid var(--faint);
+      }
+
+      .chip.now::before {
+        border-color: var(--red);
+        background: var(--red);
+        box-shadow: 0 0 0 5px rgb(229 9 20 / 25%);
+      }
+
+      .chip .muted {
+        color: var(--faint);
+      }
+
+      .step.past .chip {
+        opacity: 0.55;
+      }
+
+      /* ---- Frame 5: privacy ------------------------------------------------------------- */
+      .facts {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin-top: auto;
+      }
+
+      .fact {
+        padding: 26px 28px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: rgb(255 255 255 / 3%);
+      }
+
+      .fact b {
+        display: block;
+        font-family: var(--display);
+        font-stretch: 92%;
+        font-size: 30px;
+        font-weight: 750;
+        letter-spacing: -0.01em;
+      }
+
+      .fact span {
+        display: block;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.4;
+      }
+
+      .fact .perm {
+        display: inline-block;
+        margin: 10px 8px 0 0;
+        padding: 4px 10px;
+        border-radius: 6px;
+        background: rgb(255 255 255 / 7%);
+        color: var(--text);
+        font-size: 15px;
+        font-family: ui-monospace, 'DejaVu Sans Mono', monospace;
+      }
+
+      /* ---- Promo tiles ------------------------------------------------------------------ */
+      .small {
+        width: 440px;
+        height: 280px;
+        padding: 34px 36px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .small .lockup {
+        font-size: 30px;
+        gap: 14px;
+      }
+
+      .small .lockup img {
+        width: 52px;
+        height: 52px;
+      }
+
+      .small p {
+        margin: 0;
+        font-family: var(--display);
+        font-stretch: 88%;
+        font-size: 30px;
+        font-weight: 800;
+        line-height: 1.05;
+        letter-spacing: -0.015em;
+      }
+
+      .mini {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        width: 100%;
+        height: 38px;
+        padding: 0 12px;
+        border-radius: 10px 10px 0 0;
+        background: var(--tab);
+        font-size: 13.5px;
+      }
+
+      .mini .t {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        -webkit-mask-image: linear-gradient(90deg, #000 82%, transparent);
+        mask-image: linear-gradient(90deg, #000 82%, transparent);
+      }
+
+      .marquee {
+        width: 1400px;
+        height: 560px;
+        padding: 70px 80px;
+        display: grid;
+        grid-template-columns: 560px 1fr;
+        gap: 70px;
+        align-items: center;
+      }
+
+      .marquee .copy {
+        display: grid;
+        gap: 26px;
+      }
+
+      .marquee h1 {
+        font-size: 60px;
+      }
+
+      .stack {
+        display: grid;
+        gap: 16px;
+      }
+
+      .stack .mini {
+        width: calc(100% + 200px);
+        height: 54px;
+        padding: 0 18px;
+        gap: 12px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        font-size: 18px;
+        box-shadow: 0 16px 36px rgb(0 0 0 / 40%);
+      }
+
+      .stack .mini .t {
+        -webkit-mask-image: none;
+        mask-image: none;
+      }
+
+      .stack .mini .fav {
+        width: 18px;
+        height: 18px;
+      }
+
+      .stack .mini:nth-child(2) {
+        margin-left: 40px;
+      }
+
+      .stack .mini:nth-child(3) {
+        margin-left: 80px;
+      }
+
+      .stack .mini:nth-child(4) {
+        margin-left: 120px;
+        opacity: 0.6;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 1. Tabs before / after -->
+    <section class="frame shot" id="screenshot-1-tabs">
+      <div class="lockup"><img src="../assets/logo.svg" alt="" />Titleflix</div>
+      <div>
+        <h1>Every Netflix tab,<br />named after <em>what's playing.</em></h1>
+      </div>
+      <div class="compare">
+        <div class="row before">
+          <span class="eyebrow">Without Titleflix</span>
+          <div class="browser">
+            <div class="strip">
+              <div class="ctab on"><span class="fav"></span><span class="t">Netflix</span><span class="x"></span></div>
+              <div class="ctab"><span class="fav"></span><span class="t">Netflix</span><span class="x"></span></div>
+              <span class="sep"></span>
+              <div class="ctab"><span class="fav"></span><span class="t">Netflix</span><span class="x"></span></div>
+              <span class="sep"></span>
+              <div class="ctab"><span class="fav"></span><span class="t">Netflix</span><span class="x"></span></div>
+              <span class="plus"></span>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <span class="eyebrow red">With Titleflix</span>
+          <div class="after">
+          <div class="browser">
+            <div class="strip">
+              <div class="ctab on"><span class="fav"></span><span class="t">Stranger Things: S1:E2 Chapter Two: The Weirdo on Maple Street - Netflix</span><span class="x"></span></div>
+              <div class="ctab"><span class="fav"></span><span class="t">Wednesday: S1:E1 Wednesday's Child Is Full of Woe - Netflix</span><span class="x"></span></div>
+              <span class="sep"></span>
+              <div class="ctab"><span class="fav"></span><span class="t">Dark: S1:E1 Secrets - Netflix</span><span class="x"></span></div>
+              <span class="sep"></span>
+              <div class="ctab"><span class="fav"></span><span class="t">The Irishman - Netflix</span><span class="x"></span></div>
+              <span class="plus"></span>
+            </div>
+            <div class="toolbar">
+              <span class="nav">‹ › ↻</span>
+              <span class="omnibox"><b>netflix.com</b>/watch/80077210</span>
+            </div>
+          </div>
+          <div class="hovercard">
+            <b>Stranger Things: S1:E2 Chapter Two: The Weirdo on Maple Street - Netflix</b>
+            <span>netflix.com</span>
+          </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Bookmarks -->
+    <section class="frame shot" id="screenshot-2-bookmarks">
+      <div class="lockup"><img src="../assets/logo.svg" alt="" />Titleflix</div>
+      <div>
+        <h1>Bookmarks you can <em>tell apart.</em></h1>
+        <p class="sub">Press Ctrl+D while watching and the bookmark gets the show, season, episode and episode name.</p>
+      </div>
+      <div class="menus">
+        <div class="menu-wrap">
+          <span class="eyebrow">Without Titleflix</span>
+          <div class="menu dim">
+            <div class="menu-title"><span class="folder"></span>Watch later</div>
+            <div class="item"><span class="fav"></span><span>Netflix</span></div>
+            <div class="item"><span class="fav"></span><span>Netflix</span></div>
+            <div class="item"><span class="fav"></span><span>Netflix</span></div>
+            <div class="item"><span class="fav"></span><span>Netflix</span></div>
+            <div class="item"><span class="fav"></span><span>Netflix</span></div>
+          </div>
+        </div>
+        <span class="arrow" aria-hidden="true">→</span>
+        <div class="menu-wrap">
+          <span class="eyebrow red">With Titleflix</span>
+          <div class="menu">
+            <div class="menu-title"><span class="folder"></span>Watch later</div>
+            <div class="item"><span class="fav"></span><span>The Crown: S1:E1 Wolferton Splash - Netflix</span></div>
+            <div class="item"><span class="fav"></span><span>Squid Game: S1:E1 Red Light, Green Light - Netflix</span></div>
+            <div class="item"><span class="fav"></span><span>Ozark: S1:E1 Sugarwood - Netflix</span></div>
+            <div class="item"><span class="fav"></span><span>Dark: S1:E2 Lies - Netflix</span></div>
+            <div class="item"><span class="fav"></span><span>The Irishman - Netflix</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Popup -->
+    <section class="frame shot" id="screenshot-3-popup">
+      <div class="split">
+        <div class="copy">
+          <div class="lockup"><img src="../assets/logo.svg" alt="" />Titleflix</div>
+          <h1>See the title <em>before</em> you bookmark it.</h1>
+          <ul class="points">
+            <li><span><b>The exact title on this tab</b>, and where Titleflix found it.</span></li>
+            <li><span><b>An off switch</b> that brings back Netflix's title without stopping your video.</span></li>
+            <li><span><b>Your format.</b> Keep or drop the episode details and the “-&nbsp;Netflix” ending.</span></li>
+          </ul>
+        </div>
+        <div class="popups">
+          <img class="back" src="build/popup-live-light.png" alt="" />
+          <img class="front" src="build/popup-live-dark.png" alt="" />
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Next episode -->
+    <section class="frame shot" id="screenshot-4-episodes">
+      <div class="lockup"><img src="../assets/logo.svg" alt="" />Titleflix</div>
+      <div>
+        <h1>Keeps up when the <em>next episode</em> starts.</h1>
+        <p class="sub">Autoplay, Next Episode, back and forward: the tab title changes with the video.</p>
+      </div>
+      <div class="timeline">
+        <div class="step past">
+          <div class="when"><b>9:02 PM</b>Started watching</div>
+          <div class="chip"><span class="fav"></span>Stranger Things: S1:E1 Chapter One: The Vanishing of Will Byers <span class="muted">- Netflix</span></div>
+        </div>
+        <div class="step past">
+          <div class="when"><b>9:51 PM</b>Autoplay</div>
+          <div class="chip"><span class="fav"></span>Stranger Things: S1:E2 Chapter Two: The Weirdo on Maple Street <span class="muted">- Netflix</span></div>
+        </div>
+        <div class="step">
+          <div class="when"><b>10:47 PM</b>Next Episode</div>
+          <div class="chip now"><span class="fav"></span>Stranger Things: S1:E3 Chapter Three: Holly, Jolly <span class="muted">- Netflix</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Privacy -->
+    <section class="frame shot" id="screenshot-5-privacy">
+      <div class="lockup"><img src="../assets/logo.svg" alt="" />Titleflix</div>
+      <div>
+        <h1>Only runs on <em>netflix.com.</em></h1>
+        <p class="sub">It reads what's playing, sets the tab title, and that's all it does.</p>
+      </div>
+      <div class="facts">
+        <div class="fact"><b>No account</b><span>Install it and it works. Nothing to sign in to.</span></div>
+        <div class="fact"><b>No tracking</b><span>No analytics, no ads, no network requests.</span></div>
+        <div class="fact"><b>Saves three settings</b><span>On or off, episode details, and the “-&nbsp;Netflix” ending. Nothing about what you watch.</span></div>
+        <div class="fact">
+          <b>Small permission list</b>
+          <span class="perm">www.netflix.com</span><span class="perm">storage</span><span class="perm">scripting</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Small promo tile -->
+    <section class="frame small" id="promo-small-440x280">
+      <div class="lockup"><img src="../assets/logo.svg" alt="" />Titleflix</div>
+      <p>Real titles for<br />your Netflix tabs.</p>
+      <div class="mini"><span class="fav"></span><span class="t">Dark: S1:E2 Lies - Netflix</span><span class="x"></span></div>
+    </section>
+
+    <!-- Marquee promo tile -->
+    <section class="frame marquee" id="promo-marquee-1400x560">
+      <div class="copy">
+        <div class="lockup"><img src="../assets/logo.svg" alt="" />Titleflix</div>
+        <h1>Every Netflix tab, named after <em>what's playing.</em></h1>
+      </div>
+      <div class="stack">
+        <div class="mini"><span class="fav"></span><span class="t">Stranger Things: S1:E3 Chapter Three: Holly, Jolly - Netflix</span></div>
+        <div class="mini"><span class="fav"></span><span class="t">Wednesday: S1:E1 Wednesday's Child Is Full of Woe - Netflix</span></div>
+        <div class="mini"><span class="fav"></span><span class="t">Dark: S1:E2 Lies - Netflix</span></div>
+        <div class="mini"><span class="fav"></span><span class="t">The Irishman - Netflix</span></div>
+      </div>
+    </section>
+  </body>
+</html>

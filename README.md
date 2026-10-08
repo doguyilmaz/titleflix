@@ -3,9 +3,9 @@
   <h1>Titleflix</h1>
   <p><strong>Real names for your Netflix tabs and bookmarks.</strong></p>
 
-[![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-1a1724?logo=google-chrome&logoColor=ffb547)](https://chromewebstore.google.com/detail/titleflix)
+[![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-141414?logo=google-chrome&logoColor=e50914)](https://chromewebstore.google.com/detail/titleflix)
 [![CI](https://github.com/doguyilmaz/titleflix/actions/workflows/ci.yml/badge.svg)](https://github.com/doguyilmaz/titleflix/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-ffb547.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-e50914.svg)](LICENSE)
 
 </div>
 
@@ -18,7 +18,7 @@ Before                         After
 🔖 Netflix                      🔖 1917 - Netflix
 ```
 
-<p align="center"><img src="docs/popup.png" width="716" alt="The Titleflix popup in light and dark mode, showing the title applied to the current tab and the three settings"></p>
+<p align="center"><img src="store/images/screenshot-1-tabs.png" width="800" alt="A Chrome tab strip where every Netflix tab says Netflix, and the same tabs with Titleflix showing each show and episode"></p>
 
 ## Features
 
@@ -59,11 +59,13 @@ Then open `chrome://extensions`, turn on **Developer mode**, click **Load unpack
 
 Click the Titleflix icon in the toolbar:
 
+<p align="center"><img src="docs/popup.png" width="756" alt="The Titleflix popup in dark and light mode, showing the title applied to the current tab and the settings"></p>
+
 | Setting | Default | Effect |
 | --- | --- | --- |
 | Rename Netflix tabs | On | Off restores Netflix's own titles immediately |
-| Season & episode | On | `Dark: S1:E2 Lies` vs. `Dark` |
-| Netflix suffix | On | Adds ` - Netflix` so bookmarks are easy to search |
+| Season, episode and episode name | On | `Dark: S1:E2 Lies` vs. `Dark` |
+| “- Netflix” at the end | On | Adds ` - Netflix` so bookmarks are easy to search |
 
 The popup also shows the title being applied to the current tab and where it came from. If something looks wrong, **Report a problem** opens a GitHub issue pre-filled with your extension and browser version (never what you're watching).
 
@@ -91,6 +93,7 @@ Requires [Bun](https://bun.sh) 1.2+.
 | `bun run check` | All of the above |
 | `bun run package` | Build and create `titleflix-v<version>.zip` for the Web Store |
 | `bun run icons` | Re-render `assets/icons/*.png` from the SVG logos |
+| `bun run store:images` | Re-render the Chrome Web Store images |
 | `bun run bump:patch` | Bump the version in `package.json` and `manifest.json`, commit and tag (also `bump:minor`, `bump:major`) |
 
 ### Project layout
@@ -105,6 +108,7 @@ src/
 ├── popup/            # Toolbar popup (HTML, CSS, TS)
 └── shared/           # Pure logic shared by all of the above (title formatting, metadata parsing, settings)
 assets/               # Logo SVGs and rendered PNG icons
+store/                # Web Store images (source + rendered) and listing copy
 tests/
 ├── unit/             # bun test
 └── e2e/              # Playwright: real extension + simulated Netflix app
@@ -118,17 +122,13 @@ The tests can't log in to a real Netflix account, so the fake app is based on Ne
 
 To use a Chromium that is already installed instead of Playwright's download, set `CHROMIUM_PATH=/path/to/chrome`.
 
-### Manual check on real Netflix
+### Testing on real Netflix
 
-1. Load `dist/` unpacked and open a show episode. The tab title should change within a second, **without** moving the mouse.
-2. Let it autoplay into the next episode (or use *Next episode*). The title should follow.
-3. Pause for a minute and resume. The title should not change.
-4. Open the popup. It should say *Renaming this tab*, with the source *Netflix's player data*.
-5. Switch *Rename Netflix tabs* off and on. The title should change back and forth while the video keeps playing.
-6. Go back to Browse. The tab should show Netflix's own title again.
-7. Play a movie and check the title has no episode part.
+The automated tests can't sign in to Netflix. [docs/testing-on-netflix.md](docs/testing-on-netflix.md) has the checklist for your own account, a debug log you can turn on (`localStorage.setItem('titleflix:debug', '1')` in the Netflix tab), and a ready-made prompt for running the checklist with Claude in Chrome.
 
-If step 1 only works after moving the mouse, Netflix has probably changed its player data. Titleflix still works through the on-screen controls; please [open an issue](https://github.com/doguyilmaz/titleflix/issues).
+### Store images
+
+`bun run store:images` captures the real popup in every state and renders the Chrome Web Store screenshots and promo tiles from [`store/images.html`](store/images.html) into `store/images/`. Listing copy (English and Turkish) and permission justifications are in [`store/listing.md`](store/listing.md).
 
 ## Contributing
 

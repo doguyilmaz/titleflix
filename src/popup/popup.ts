@@ -1,16 +1,28 @@
 import type { GetStateRequest, TabState } from '../shared/messages';
 import { loadSettings, saveSettings, type Settings } from '../shared/settings';
-import type { TitleSource } from '../shared/title';
+import { formatTitle, SUFFIX, type TitleInfo, type TitleSource } from '../shared/title';
 
 type ViewState = 'loading' | 'live' | 'searching' | 'idle' | 'off' | 'not-netflix' | 'unreachable';
 
 const REFRESH_MS = 1000;
 const REPO = 'https://github.com/doguyilmaz/titleflix';
+const EXAMPLE: TitleInfo = { title: 'Dark', season: 1, episode: 2, episodeTitle: 'Lies', source: 'player-data' };
+
 const SOURCE_LABEL: Record<TitleSource, string> = {
-  'player-data': "Netflix's player data",
-  'player-controls': 'the on-screen player title',
-  'pause-overlay': 'the pause screen',
-  'media-session': "Chrome's media controls",
+  'player-data': 'from player data',
+  'player-controls': 'from player controls',
+  'pause-overlay': 'from pause screen',
+  'media-session': 'from media info',
+};
+
+const STATUS_LABEL: Record<ViewState, string> = {
+  loading: 'Checking',
+  live: 'Renaming this tab',
+  searching: 'Finding the title',
+  idle: 'Ready',
+  off: 'Off',
+  'not-netflix': 'Not on Netflix',
+  unreachable: 'Not running here',
 };
 
 function $<T extends HTMLElement>(id: string): T {
@@ -22,13 +34,17 @@ function $<T extends HTMLElement>(id: string): T {
 const ui = {
   version: $('version'),
   now: $('now'),
+  tabText: $('tabText'),
   label: $('statusLabel'),
-  hint: $('statusHint'),
-  preview: $('preview'),
-  previewTitle: $('previewTitle'),
-  reload: $<HTMLButtonElement>('reloadBtn'),
+  source: $('source'),
+  titleMain: $('titleMain'),
+  titleSuffix: $('titleSuffix'),
+  hint: $('hint'),
+  action: $<HTMLButtonElement>('actionBtn'),
   report: $<HTMLAnchorElement>('reportLink'),
-  settings: document.querySelector<HTMLElement>('.settings')!,
+  settings: $('settings'),
+  example: $('example'),
+  pane: document.querySelector<HTMLElement>('.pane')!,
   toggles: {
     enabled: $<HTMLInputElement>('enabled'),
     showEpisode: $<HTMLInputElement>('showEpisode'),
@@ -37,8 +53,10 @@ const ui = {
 };
 
 const version = chrome.runtime.getManifest().version;
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let tabId: number | undefined;
 let injectionTried = false;
+let lastRender = '';
 
 function isNetflixUrl(url: string | undefined): boolean {
   if (!url) return false;
@@ -76,48 +94,87 @@ async function tryInject(id: number): Promise<void> {
   }
 }
 
-function render(view: ViewState, state: TabState | null): void {
-  ui.now.dataset.state = view;
-  ui.reload.hidden = view !== 'unreachable';
-  const title = view === 'live' ? state?.appliedTitle : null;
-  ui.preview.hidden = !title;
-  ui.previewTitle.textContent = title ?? '';
-  ui.previewTitle.title = title ?? '';
+/** Split "Show - Netflix" into the part that matters and the dimmed suffix. */
+function splitSuffix(title: string): [string, string] {
+  return title.endsWith(SUFFIX) ? [title.slice(0, -SUFFIX.length), SUFFIX] : [title, ''];
+}
 
+function setText(el: HTMLElement, text: string): void {
+  if (el.textContent !== text) el.textContent = text;
+}
+
+function animate(el: HTMLElement, keyframes: Keyframe[], duration: number): void {
+  if (!reducedMotion && !document.body.classList.contains('no-motion')) {
+    el.animate(keyframes, { duration, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' });
+  }
+}
+
+function hintFor(view: ViewState): (string | Node)[] {
   switch (view) {
-    case 'loading':
-      ui.label.textContent = 'Checking this tab…';
-      ui.hint.textContent = '';
-      break;
     case 'live': {
-      ui.label.textContent = 'Renaming this tab';
-      const source = state?.source ? SOURCE_LABEL[state.source] : null;
-      const shortcut = /Mac/i.test(navigator.userAgent) ? '⌘D' : 'Ctrl+D';
-      ui.hint.textContent = `${source ? `Found via ${source}. ` : ''}Press ${shortcut} to bookmark it.`;
-      break;
+      const key = document.createElement('kbd');
+      key.textContent = /Mac/i.test(navigator.userAgent) ? '⌘D' : 'Ctrl+D';
+      return ['Press ', key, ' to bookmark it.'];
     }
     case 'searching':
-      ui.label.textContent = 'Looking for the title…';
-      ui.hint.textContent =
-        "This normally takes a moment. If nothing shows up, move your mouse over the video so Netflix shows the player controls.";
-      break;
+      return ['If this takes more than a few seconds, move the mouse over the video.'];
     case 'idle':
-      ui.label.textContent = 'Ready';
-      ui.hint.textContent = 'Start watching something and this tab will be renamed.';
-      break;
+      return ['Play something and this tab gets renamed.'];
     case 'off':
-      ui.label.textContent = 'Paused';
-      ui.hint.textContent = "Netflix's own titles are shown. Turn renaming back on below.";
-      break;
+      return ["Netflix's own title is showing."];
     case 'not-netflix':
-      ui.label.textContent = 'Not a Netflix tab';
-      ui.hint.textContent = 'Titleflix only runs on netflix.com.';
-      break;
+      return ['Titleflix only works on netflix.com.'];
     case 'unreachable':
-      ui.label.textContent = 'Not running in this tab yet';
-      ui.hint.textContent = 'Reload the Netflix tab to start Titleflix.';
-      break;
+      return ['Reload the tab to start Titleflix.'];
+    case 'loading':
+      return [];
   }
+}
+
+function render(view: ViewState, state: TabState | null): void {
+  const applied = view === 'live' ? (state?.appliedTitle ?? '') : '';
+  const current = state?.currentTitle || 'Netflix';
+  const tabText = view === 'live' ? applied : view === 'not-netflix' ? 'Another site' : current;
+  const titleText =
+    view === 'live'
+      ? applied
+      : view === 'not-netflix'
+        ? 'Open Netflix to use Titleflix'
+        : view === 'unreachable'
+          ? 'Netflix'
+          : current;
+  const source = view === 'live' && state?.source ? SOURCE_LABEL[state.source] : '';
+
+  const key = JSON.stringify([view, tabText, titleText, source]);
+  if (key === lastRender) return;
+  const viewChanged = !lastRender.startsWith(`["${view}"`);
+  const tabChanged = !lastRender.includes(JSON.stringify(tabText));
+  lastRender = key;
+
+  ui.now.dataset.state = view;
+  setText(ui.label, STATUS_LABEL[view]);
+  setText(ui.source, source);
+  setText(ui.tabText, tabText);
+  ui.tabText.title = tabText;
+
+  const [main, suffix] = view === 'live' ? splitSuffix(titleText) : [titleText, ''];
+  setText(ui.titleMain, main);
+  setText(ui.titleSuffix, suffix);
+  ui.titleMain.parentElement!.title = titleText;
+
+  ui.hint.replaceChildren(...hintFor(view));
+
+  const action = view === 'unreachable' ? 'Reload tab' : view === 'not-netflix' ? 'Open Netflix' : '';
+  ui.action.hidden = !action;
+  setText(ui.action, action);
+  ui.action.dataset.action = view;
+
+  if (viewChanged) {
+    animate(ui.pane, [{ opacity: 0.35, transform: 'translateY(3px)' }, { opacity: 1, transform: 'none' }], 220);
+  } else if (tabChanged) {
+    animate(ui.pane, [{ opacity: 0.5 }, { opacity: 1 }], 180);
+  }
+  if (tabChanged) animate(ui.tabText, [{ opacity: 0 }, { opacity: 1 }], 200);
 
   updateReportLink(view, state);
 }
@@ -162,21 +219,27 @@ async function refresh(): Promise<void> {
   render(state ? viewFor(state) : 'unreachable', state);
 }
 
+function renderExample(settings: Settings): void {
+  const [main, suffix] = splitSuffix(formatTitle(EXAMPLE, settings) ?? '');
+  const tail = document.createElement('span');
+  tail.className = 'example-suffix';
+  tail.textContent = suffix;
+  ui.example.replaceChildren(main, tail);
+}
+
 function applySettings(settings: Settings): void {
   for (const key of Object.keys(ui.toggles) as (keyof Settings)[]) {
     ui.toggles[key].checked = settings[key];
-    ui.toggles[key].setAttribute('aria-checked', String(settings[key]));
   }
   ui.toggles.showEpisode.disabled = !settings.enabled;
   ui.toggles.appendSuffix.disabled = !settings.enabled;
-  ui.settings.classList.toggle('is-disabled', !settings.enabled);
+  ui.settings.classList.toggle('is-off', !settings.enabled);
+  renderExample(settings);
 }
 
 async function main(): Promise<void> {
   ui.version.textContent = `v${version}`;
-  document.body.classList.add('no-motion');
   applySettings(await loadSettings());
-  requestAnimationFrame(() => document.body.classList.remove('no-motion'));
 
   for (const key of Object.keys(ui.toggles) as (keyof Settings)[]) {
     ui.toggles[key].addEventListener('change', async () => {
@@ -186,14 +249,18 @@ async function main(): Promise<void> {
     });
   }
 
-  ui.reload.addEventListener('click', async () => {
-    if (tabId === undefined) return;
-    await chrome.tabs.reload(tabId);
+  ui.action.addEventListener('click', async () => {
+    if (ui.action.dataset.action === 'not-netflix') {
+      await chrome.tabs.create({ url: 'https://www.netflix.com/browse' });
+    } else if (tabId !== undefined) {
+      await chrome.tabs.reload(tabId);
+    }
     window.close();
   });
 
-  render('loading', null);
   await refresh();
+  // Enable transitions only after the first real state is on screen.
+  requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.remove('no-motion')));
   window.setInterval(() => void refresh(), REFRESH_MS);
 }
 

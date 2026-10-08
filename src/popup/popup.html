@@ -2,64 +2,66 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="color-scheme" content="dark light" />
     <title>Titleflix</title>
     <link rel="stylesheet" href="popup.css" />
   </head>
-  <body>
+  <body class="no-motion">
     <header class="brand">
-      <img class="brand-mark" src="icons/logo.svg" alt="" width="36" height="36" />
-      <div class="brand-text">
-        <h1>Titleflix</h1>
-        <p>Real names for your Netflix tabs</p>
-      </div>
+      <img class="brand-mark" src="icons/logo.svg" alt="" width="28" height="28" />
+      <h1>Titleflix</h1>
       <span class="version" id="version"></span>
     </header>
 
-    <main>
-      <section class="now" id="now" data-state="loading" aria-live="polite">
-        <div class="now-head">
-          <span class="dot" aria-hidden="true"></span>
-          <span class="now-label" id="statusLabel">Checking this tab…</span>
+    <!-- The status card is a small browser window: a tab strip on top, the page below. -->
+    <section class="window" id="now" data-state="loading" aria-live="polite" aria-labelledby="statusLabel">
+      <div class="strip" aria-hidden="true">
+        <div class="tab">
+          <span class="tab-icon"></span>
+          <span class="tab-text" id="tabText">Netflix</span>
+          <span class="tab-close"></span>
         </div>
-        <div class="tab-preview" id="preview" hidden>
-          <span class="tab-favicon" aria-hidden="true"></span>
-          <span class="tab-title" id="previewTitle"></span>
+        <span class="tab-new"></span>
+      </div>
+      <div class="pane">
+        <div class="pane-head">
+          <span class="pill"><span class="dot"></span><span id="statusLabel">Checking this tab</span></span>
+          <span class="source" id="source"></span>
         </div>
-        <p class="now-hint" id="statusHint"></p>
-        <button class="btn" id="reloadBtn" type="button" hidden>Reload tab</button>
-      </section>
+        <p class="title" id="title"><span id="titleMain"></span><span class="title-suffix" id="titleSuffix"></span></p>
+        <div class="skeleton" aria-hidden="true"><span></span><span></span></div>
+        <div class="pane-foot">
+          <p class="hint" id="hint"></p>
+          <button class="btn" id="actionBtn" type="button" hidden></button>
+        </div>
+      </div>
+    </section>
 
-      <section class="settings" aria-label="Settings">
-        <label class="row">
-          <span class="row-text">
-            <span class="row-title">Rename Netflix tabs</span>
-            <span class="row-sub">Off keeps Netflix's own titles</span>
-          </span>
-          <input type="checkbox" class="switch" id="enabled" role="switch" />
-        </label>
-        <label class="row">
-          <span class="row-text">
-            <span class="row-title">Season &amp; episode</span>
-            <span class="row-sub">Dark: S1:E2 Lies</span>
-          </span>
+    <section class="settings" id="settings" aria-label="Settings">
+      <label class="row row-main" for="enabled">
+        <span class="row-title">Rename Netflix tabs</span>
+        <input type="checkbox" class="switch" id="enabled" role="switch" />
+      </label>
+      <div class="format">
+        <div class="format-head">
+          <span class="eyebrow">Title format</span>
+          <span class="example" id="example"></span>
+        </div>
+        <label class="row" for="showEpisode">
+          <span class="row-title">Season, episode and episode name</span>
           <input type="checkbox" class="switch" id="showEpisode" role="switch" />
         </label>
-        <label class="row">
-          <span class="row-text">
-            <span class="row-title">Netflix suffix</span>
-            <span class="row-sub">Adds “- Netflix” to the end</span>
-          </span>
+        <label class="row" for="appendSuffix">
+          <span class="row-title">“- Netflix” at the end</span>
           <input type="checkbox" class="switch" id="appendSuffix" role="switch" />
         </label>
-      </section>
-    </main>
+      </div>
+    </section>
 
     <footer class="foot">
-      <p>Runs only on netflix.com. Nothing leaves your browser.</p>
+      <span>Only runs on netflix.com. No tracking.</span>
       <nav>
         <a id="reportLink" href="https://github.com/doguyilmaz/titleflix/issues/new" target="_blank" rel="noopener noreferrer">Report a problem</a>
-        <a href="https://github.com/doguyilmaz/titleflix" target="_blank" rel="noopener noreferrer">Source</a>
       </nav>
     </footer>
 

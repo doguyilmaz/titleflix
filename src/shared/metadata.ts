@@ -116,3 +116,35 @@ export function readPlayerInfo(win: unknown, videoId: string): PlayerInfo | null
     return null;
   }
 }
+
+/**
+ * Key names (never values) along the player-data path, for the debug log. Lets a tester report
+ * how Netflix's structure looks today when findPlayerInfo() doesn't match it.
+ */
+export function describePlayerState(win: unknown): Record<string, unknown> {
+  const report: Record<string, unknown> = {};
+  try {
+    const netflix = asObj(asObj(win)?.netflix);
+    report.netflix = netflix ? Object.keys(netflix).slice(0, 20) : 'missing';
+    const playerApp = asObj(asObj(asObj(netflix?.appContext)?.state)?.playerApp);
+    report.playerApp = playerApp ? Object.keys(playerApp).slice(0, 20) : 'missing';
+    if (typeof playerApp?.getState !== 'function') return report;
+    const state = asObj(playerApp.getState.call(playerApp));
+    report.state = state ? Object.keys(state).slice(0, 20) : 'missing';
+    const videoPlayer = asObj(state?.videoPlayer);
+    report.videoPlayer = videoPlayer ? Object.keys(videoPlayer).slice(0, 20) : 'missing';
+    const container = asObj(videoPlayer?.videoMetadata);
+    report.videoMetadataIds = container ? Object.keys(container).slice(0, 10) : 'missing';
+    const first = asObj(container ? Object.values(container)[0] : null);
+    if (first) {
+      report.entry = Object.keys(first).slice(0, 20);
+      const meta = asObj(first._metadata) ?? asObj(first.metadata);
+      if (meta) report.entryMetadata = Object.keys(meta).slice(0, 20);
+      const video = asObj(meta?.video) ?? asObj(first._video) ?? asObj(first.video);
+      if (video) report.video = Object.keys(video).slice(0, 40);
+    }
+  } catch (error) {
+    report.error = String(error);
+  }
+  return report;
+}

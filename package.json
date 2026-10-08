@@ -35,7 +35,8 @@
     "bump": "bun scripts/bump-version.ts",
     "bump:patch": "bun scripts/bump-version.ts patch",
     "bump:minor": "bun scripts/bump-version.ts minor",
-    "bump:major": "bun scripts/bump-version.ts major"
+    "bump:major": "bun scripts/bump-version.ts major",
+    "store:images": "bun run build && TITLEFLIX_SCALE=2 playwright test -c store/playwright.config.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.0",

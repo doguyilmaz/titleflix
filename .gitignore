@@ -36,3 +36,4 @@ temp/
 # Test output
 test-results/
 playwright-report/
+store/build/

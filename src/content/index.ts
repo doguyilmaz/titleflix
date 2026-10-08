@@ -8,6 +8,7 @@
  *  - follows Netflix's client-side navigation (next episode, back to browse);
  *  - restores Netflix's own title when the user turns Titleflix off or leaves the watch page.
  */
+import { createLogger } from '../shared/debug';
 import { isGetStateRequest, TAKEOVER_EVENT, type TabState } from '../shared/messages';
 import { DEFAULT_SETTINGS, loadSettings, onSettingsChanged, type Settings } from '../shared/settings';
 import {
@@ -30,6 +31,8 @@ const REAPPLY_WINDOW_MS = 2000;
 const CACHE_SIZE = 50;
 
 type NavigationLike = EventTarget;
+
+const log = createLogger('content');
 
 function extensionAlive(): boolean {
   try {
@@ -132,6 +135,7 @@ class TitleflixTab {
     this.videoId = nextId;
     this.info = nextId ? (this.cache.get(nextId) ?? null) : null;
     this.updateDomObserver();
+    log(nextId ? `watching video ${nextId}` : 'not on a watch page', location.pathname);
   }
 
   /** Read every available source and keep the most trustworthy answer for this video. */
@@ -159,6 +163,9 @@ class TitleflixTab {
   }
 
   private remember(videoId: string, info: TitleInfo): void {
+    if (contentIdentity(info) !== contentIdentity(this.info) || info.source !== this.info?.source) {
+      log(`title for video ${videoId} from ${info.source}:`, info);
+    }
     this.info = info;
     this.cache.delete(videoId);
     this.cache.set(videoId, info);
@@ -177,6 +184,7 @@ class TitleflixTab {
     if (!this.alive) return;
     const desired = this.desiredTitle();
     if (desired) {
+      if (desired !== this.applied) log(`tab title -> "${desired}"`);
       this.applied = desired;
       if (document.title !== desired) document.title = desired;
     } else {
@@ -185,7 +193,10 @@ class TitleflixTab {
   }
 
   private restorePageTitle(): void {
-    if (this.applied !== null && document.title === this.applied) document.title = this.pageTitle;
+    if (this.applied !== null && document.title === this.applied) {
+      document.title = this.pageTitle;
+      log(`restored Netflix's title "${this.pageTitle}"`);
+    }
     this.applied = null;
   }
 
@@ -203,6 +214,7 @@ class TitleflixTab {
         return;
       }
       if (this.applied === null || !this.withinReapplyBudget()) return; // Next tick catches up.
+      log(`Netflix set the title to "${current}", putting ours back`);
       this.render();
     });
     this.titleObserver.observe(document.head ?? document.documentElement, {
@@ -274,6 +286,7 @@ class TitleflixTab {
 
   destroy(): void {
     if (!this.alive) return;
+    log('stopping this copy (extension reloaded, updated or disabled)');
     this.alive = false;
     this.restorePageTitle();
     this.titleObserver?.disconnect();

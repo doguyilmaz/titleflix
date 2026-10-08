@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { findPlayerInfo, matchVideo, readPlayerInfo } from '../../src/shared/metadata';
+import { describePlayerState, findPlayerInfo, matchVideo, readPlayerInfo } from '../../src/shared/metadata';
 
 const show = {
   type: 'show',
@@ -123,5 +123,29 @@ describe('readPlayerInfo', () => {
       },
     };
     expect(readPlayerInfo(getter, '1')).toBeNull();
+  });
+});
+
+describe('describePlayerState', () => {
+  test('lists key names along the path, never values', () => {
+    const win = {
+      netflix: {
+        appContext: {
+          state: {
+            playerApp: {
+              getState: () => ({ videoPlayer: { videoMetadata: { 80057281: { _metadata: { video: show } } } } }),
+            },
+          },
+        },
+      },
+    };
+    const report = describePlayerState(win);
+    expect(report.videoMetadataIds).toEqual(['80057281']);
+    expect(report.video).toContain('seasons');
+    expect(JSON.stringify(report)).not.toContain('Stranger Things');
+  });
+
+  test('reports where the path breaks', () => {
+    expect(describePlayerState({})).toEqual({ netflix: 'missing', playerApp: 'missing' });
   });
 });
