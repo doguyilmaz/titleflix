@@ -35,14 +35,15 @@ function sameId(value: unknown, id: string): boolean {
   return (typeof value === 'number' || typeof value === 'string') && String(value) === id;
 }
 
-/** Netflix wraps the API response differently across player versions; try the known wrappers. */
-function videoCandidates(entry: unknown): Obj[] {
+/** The API response inside one videoMetadata entry: `_metadataObject` today, `_metadata` in older players. */
+function entryMetadata(entry: unknown): Obj | null {
   const e = asObj(entry);
-  if (!e) return [];
-  const meta = asObj(e._metadata) ?? asObj(e.metadata);
-  return [asObj(meta?.video), asObj(e._video), asObj(e.video), e].filter(
-    (v): v is Obj => v !== null && typeof v.title === 'string',
-  );
+  return asObj(e?._metadataObject) ?? asObj(e?._metadata);
+}
+
+function entryVideo(entry: unknown): Obj | null {
+  const video = asObj(entryMetadata(entry)?.video);
+  return typeof video?.title === 'string' ? video : null;
 }
 
 /** Match one metadata `video` object against the id in the /watch/ URL. */
@@ -60,7 +61,7 @@ export function matchVideo(video: Obj, videoId: string): PlayerInfo | null {
       const episode = asObj(rawEpisode);
       if (!episode) continue;
       if (sameId(episode.id, videoId) || sameId(episode.episodeId, videoId)) {
-        const hideNumbers = video.hiddenEpisodeNumbers === true || season?.hiddenEpisodeNumbers === true;
+        const hideNumbers = [video, season, episode].some((o) => o?.hiddenEpisodeNumbers === true);
         const info: PlayerInfo = { title };
         const episodeTitle = str(episode.title);
         if (episodeTitle) info.episodeTitle = episodeTitle;
@@ -92,13 +93,12 @@ export function findPlayerInfo(videoMetadata: unknown, videoId: string): PlayerI
   const container = asObj(videoMetadata);
   if (!container) return null;
 
-  // Prefer the entry keyed by the id itself, then scan the rest (episodes are often keyed by show).
+  // Prefer the entry keyed by the id itself, then scan the rest.
   const entries = [container[videoId], ...Object.values(container)];
   for (const entry of entries.slice(0, 100)) {
-    for (const video of videoCandidates(entry)) {
-      const info = matchVideo(video, videoId);
-      if (info) return info;
-    }
+    const video = entryVideo(entry);
+    const info = video && matchVideo(video, videoId);
+    if (info) return info;
   }
   return null;
 }
@@ -138,9 +138,9 @@ export function describePlayerState(win: unknown): Record<string, unknown> {
     const first = asObj(container ? Object.values(container)[0] : null);
     if (first) {
       report.entry = Object.keys(first).slice(0, 20);
-      const meta = asObj(first._metadata) ?? asObj(first.metadata);
+      const meta = entryMetadata(first);
       if (meta) report.entryMetadata = Object.keys(meta).slice(0, 20);
-      const video = asObj(meta?.video) ?? asObj(first._video) ?? asObj(first.video);
+      const video = asObj(meta?.video);
       if (video) report.video = Object.keys(video).slice(0, 40);
     }
   } catch (error) {

@@ -134,7 +134,7 @@ describe('formatTitle', () => {
     expect(formatTitle(null, ALL)).toBeNull();
     expect(formatTitle({ title: 'RATED 18+', source: 'player-controls' }, ALL)).toBeNull();
     expect(formatTitle({ title: '   ', source: 'player-controls' }, ALL)).toBeNull();
-    expect(formatTitle({ title: 'Netflix', source: 'media-session' }, ALL)).toBeNull();
+    expect(formatTitle({ title: 'Netflix', source: 'pause-overlay' }, ALL)).toBeNull();
   });
 
   test('output is plain text even for markup-like titles', () => {

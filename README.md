@@ -38,7 +38,6 @@ Netflix only shows the title on screen while the player controls are visible, wh
 | 1 | Netflix's player data (show, season, episode, episode title) | As soon as the video loads |
 | 2 | The title in the player controls | While the controls are visible |
 | 3 | The "You're watching" pause screen | After pausing for a while |
-| 3 | Chrome's media controls (Media Session) | If Netflix provides it |
 
 A weaker source never replaces a stronger one for the same video. Once a title is found it stays until you move to another video.
 
@@ -59,7 +58,7 @@ Then open `chrome://extensions`, turn on **Developer mode**, click **Load unpack
 
 Click the Titleflix icon in the toolbar:
 
-<p align="center"><img src="docs/popup.png" width="756" alt="The Titleflix popup in dark and light mode, showing the title applied to the current tab and the settings"></p>
+<p align="center"><img src="store/images/screenshot-3-popup.png" width="800" alt="The Titleflix popup in dark and light mode, showing the title applied to the current tab and the settings"></p>
 
 | Setting | Default | Effect |
 | --- | --- | --- |

@@ -20,7 +20,7 @@ const show = {
 
 const movie = { type: 'movie', title: 'The Irishman', id: 80175798 };
 
-/** The shape Netflix's player state is known to use. */
+/** The shape of Netflix's player state. */
 function playerState(videoMetadata: unknown) {
   return {
     netflix: {
@@ -65,6 +65,14 @@ describe('matchVideo', () => {
     });
   });
 
+  test('hides numbers when only the episode hides them', () => {
+    const limited = {
+      ...show,
+      seasons: [{ seq: 1, episodes: [{ id: 80077210, seq: 2, title: 'Two', hiddenEpisodeNumbers: true }] }],
+    };
+    expect(matchVideo(limited, '80077210')).toEqual({ title: 'Stranger Things', episodeTitle: 'Two' });
+  });
+
   test('returns null for an unrelated id', () => {
     expect(matchVideo(show, '1')).toBeNull();
     expect(matchVideo(movie, '1')).toBeNull();
@@ -73,17 +81,14 @@ describe('matchVideo', () => {
 
 describe('findPlayerInfo', () => {
   test.each([
-    ['_metadata.video', { _metadata: { video: show } }],
-    ['metadata.video', { metadata: { video: show } }],
-    ['_video', { _video: show }],
-    ['video', { video: show }],
-    ['bare', show],
+    ['_metadataObject', { _metadataObject: { video: show }, _seasons: [], _video: { _video: show } }],
+    ['_metadata', { _metadata: { video: show } }],
   ])('understands the %s wrapper', (_name, entry) => {
-    expect(findPlayerInfo({ 80057281: entry }, '80077210')).toMatchObject({ episode: 2 });
+    expect(findPlayerInfo({ 80077210: entry }, '80077210')).toMatchObject({ episode: 2 });
   });
 
   test('scans entries keyed by something else', () => {
-    const container = { 80175798: { _metadata: { video: movie } }, 80057281: { _metadata: { video: show } } };
+    const container = { 80175798: { _metadataObject: { video: movie } }, 80057281: { _metadataObject: { video: show } } };
     expect(findPlayerInfo(container, '80117800')).toMatchObject({ season: 2 });
   });
 
@@ -96,7 +101,7 @@ describe('findPlayerInfo', () => {
 
 describe('readPlayerInfo', () => {
   test('reads Netflix player state', () => {
-    const win = playerState({ 80057281: { _metadata: { video: show } } });
+    const win = playerState({ 80057281: { _metadataObject: { video: show } } });
     expect(readPlayerInfo(win, '80077209')).toMatchObject({ title: 'Stranger Things', season: 1, episode: 1 });
   });
 
@@ -133,7 +138,7 @@ describe('describePlayerState', () => {
         appContext: {
           state: {
             playerApp: {
-              getState: () => ({ videoPlayer: { videoMetadata: { 80057281: { _metadata: { video: show } } } } }),
+              getState: () => ({ videoPlayer: { videoMetadata: { 80057281: { _metadataObject: { video: show } } } } }),
             },
           },
         },

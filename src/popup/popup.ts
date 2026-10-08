@@ -12,7 +12,6 @@ const SOURCE_LABEL: Record<TitleSource, string> = {
   'player-data': 'from player data',
   'player-controls': 'from player controls',
   'pause-overlay': 'from pause screen',
-  'media-session': 'from media info',
 };
 
 const STATUS_LABEL: Record<ViewState, string> = {
@@ -56,7 +55,7 @@ const version = chrome.runtime.getManifest().version;
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let tabId: number | undefined;
 let injectionTried = false;
-let lastRender = '';
+let last: { key: string; view: ViewState; tabText: string } | null = null;
 
 function isNetflixUrl(url: string | undefined): boolean {
   if (!url) return false;
@@ -146,10 +145,10 @@ function render(view: ViewState, state: TabState | null): void {
   const source = view === 'live' && state?.source ? SOURCE_LABEL[state.source] : '';
 
   const key = JSON.stringify([view, tabText, titleText, source]);
-  if (key === lastRender) return;
-  const viewChanged = !lastRender.startsWith(`["${view}"`);
-  const tabChanged = !lastRender.includes(JSON.stringify(tabText));
-  lastRender = key;
+  if (key === last?.key) return;
+  const viewChanged = view !== last?.view;
+  const tabChanged = tabText !== last?.tabText;
+  last = { key, view, tabText };
 
   ui.now.dataset.state = view;
   setText(ui.label, STATUS_LABEL[view]);

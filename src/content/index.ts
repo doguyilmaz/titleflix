@@ -3,7 +3,7 @@
  *
  * Keeps the tab title of a Netflix /watch/ page set to what is playing:
  *  - figures out the title from Netflix's player data (via the main-world bridge), the player
- *    controls, the pause overlay or Media Session, keeping the best answer per video;
+ *    controls or the pause overlay, keeping the best answer per video;
  *  - re-applies the title whenever Netflix overwrites it;
  *  - follows Netflix's client-side navigation (next episode, back to browse);
  *  - restores Netflix's own title when the user turns Titleflix off or leaves the watch page.
@@ -19,7 +19,7 @@ import {
   watchIdFromPath,
   type TitleInfo,
 } from '../shared/title';
-import { readMediaSession, readPauseOverlay, readPlayerControls, readPlayerData } from './extract';
+import { readPauseOverlay, readPlayerControls, readPlayerData } from './extract';
 
 const TICK_MS = 500;
 const DOM_CHECK_THROTTLE_MS = 250;
@@ -152,7 +152,7 @@ class TitleflixTab {
     }
 
     const recentlyNavigated = Date.now() - this.navigatedAt < STALE_DOM_MS;
-    const candidates = [readPlayerControls(document), readPauseOverlay(document), readMediaSession()];
+    const candidates = [readPlayerControls(document), readPauseOverlay(document)];
     for (const candidate of candidates) {
       if (!candidate || SOURCE_RANK[candidate.source] < currentRank) continue;
       // Right after "next episode", the controls may still show the previous episode.
@@ -173,6 +173,7 @@ class TitleflixTab {
       const oldest = this.cache.keys().next().value;
       if (oldest !== undefined) this.cache.delete(oldest);
     }
+    this.updateDomObserver();
   }
 
   private desiredTitle(): string | null {
@@ -235,7 +236,7 @@ class TitleflixTab {
 
   /** Only watch the player DOM while on a watch page that still lacks player data. */
   private updateDomObserver(): void {
-    const wanted = this.videoId !== null;
+    const wanted = this.videoId !== null && !(this.info && SOURCE_RANK[this.info.source] >= MAX_RANK);
     if (wanted && !this.domObserver && document.body) {
       this.domObserver = new MutationObserver(() => this.scheduleDomCheck());
       this.domObserver.observe(document.body, { childList: true, subtree: true });
@@ -247,7 +248,6 @@ class TitleflixTab {
 
   private scheduleDomCheck(): void {
     if (this.domCheckTimer !== null) return;
-    if (this.info && SOURCE_RANK[this.info.source] >= MAX_RANK) return;
     this.domCheckTimer = window.setTimeout(() => {
       this.domCheckTimer = null;
       this.check();

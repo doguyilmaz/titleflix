@@ -26,7 +26,7 @@ bun run build
 | --- | --- | --- |
 | 1 | Play an episode of a series. Don't touch the mouse. | Within about a second the tab reads `Show: S1:E3 Episode name - Netflix`. Console: `player data has video …` and `title for video … from player-data`. |
 | 2 | Use *Next Episode*, or skip to the end and let autoplay continue. | The title moves to the next episode right away. |
-| 3 | Press the browser's Back button. | The title follows back to the previous episode. |
+| 3 | Press the browser's Back button, then Forward. | Netflix replaces the history entry on *Next Episode*, so Back lands on Browse with Netflix's own title. Forward brings the episode title back. |
 | 4 | Pause for a minute, then resume. | The title doesn't change. |
 | 5 | Play a movie. | `Movie name - Netflix`, no episode part. |
 | 6 | Go back to Home/Browse. | Netflix's own title (for example `Home - Netflix`). |
@@ -54,7 +54,7 @@ In a new tab, go through these steps on https://www.netflix.com. After each one,
 1. Start an episode of any series. Don't move the mouse over the player. Wait 3 seconds.
    Expected title: "<Show>: S<n>:E<n> <Episode name> - Netflix".
 2. Click "Next Episode" (hover the player to reveal it). Wait 3 seconds. Expected: the next episode's title.
-3. Go back with the browser's Back button. Expected: the previous episode's title.
+3. Press the browser's Back button, then Forward. Expected: Netflix's own title on the page Back lands on, then the episode title again after Forward.
 4. Pause, wait 60 seconds, resume. Expected: no title change.
 5. Open any movie and play it. Expected: "<Movie> - Netflix".
 6. Go to the Netflix home page. Expected: Netflix's own title, like "Home - Netflix".

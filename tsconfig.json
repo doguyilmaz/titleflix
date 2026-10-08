@@ -16,6 +16,6 @@
     "noUnusedParameters": true,
     "types": ["chrome", "bun"]
   },
-  "include": ["src/**/*", "scripts/**/*", "tests/**/*", "playwright.config.ts"],
+  "include": ["src/**/*", "scripts/**/*", "tests/**/*", "store/**/*.ts", "playwright.config.ts"],
   "exclude": ["node_modules", "dist"]
 }

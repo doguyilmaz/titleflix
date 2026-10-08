@@ -136,7 +136,7 @@ Saves the user's three preferences: renaming on or off, whether to include episo
 `scripting`:
 
 ```
-Used only when the extension is installed or updated, to start the extension's own bundled script in Netflix tabs that are already open, so users don't have to reload a video that is playing.
+Starts the extension's own bundled script in Netflix tabs that were already open when it was installed or updated, so users don't have to reload a video that is playing. It runs right after install or update, or when the popup is opened in such a tab.
 ```
 
 **Remote code:** No.

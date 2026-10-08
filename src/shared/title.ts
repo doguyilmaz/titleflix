@@ -4,10 +4,9 @@
  */
 
 /** Where a title came from, ordered from least to most trustworthy. */
-export type TitleSource = 'media-session' | 'pause-overlay' | 'player-controls' | 'player-data';
+export type TitleSource = 'pause-overlay' | 'player-controls' | 'player-data';
 
 export const SOURCE_RANK: Record<TitleSource, number> = {
-  'media-session': 1,
   'pause-overlay': 1,
   'player-controls': 2,
   'player-data': 3,

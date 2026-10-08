@@ -13,8 +13,7 @@ Titleflix is a Chrome extension that renames Netflix browser tabs to the show or
 On `www.netflix.com` pages, Titleflix reads information that is already in the page to work out what is playing:
 
 - the show or movie title, season, episode number and episode title from Netflix's player data, which Netflix has already loaded in the page;
-- the title shown in the player controls or on the pause screen;
-- the media information Netflix provides to Chrome's media controls.
+- the title shown in the player controls or on the pause screen.
 
 This information is used only to set the tab's title. It is kept in the tab's memory while the tab is open and is never written to storage, sent anywhere, or shared with anyone.
 
@@ -36,7 +35,7 @@ Version 1.x kept the title of the video you were watching in local extension sto
 | --- | --- |
 | Host access to `https://www.netflix.com/*` | Read what's playing and set the tab title on Netflix. Titleflix cannot see or change any other website. |
 | `storage` | Save the three preferences listed above. |
-| `scripting` | When Titleflix is installed or updated, start it in Netflix tabs that are already open, so they work without a reload. It only runs Titleflix's own bundled files, and only on Netflix tabs. |
+| `scripting` | Start Titleflix in Netflix tabs that were already open when it was installed or updated, so they work without a reload. This happens right after install or update, or when you open the popup in such a tab. It only runs Titleflix's own bundled files, and only on Netflix tabs. |
 
 ## Reporting problems
 

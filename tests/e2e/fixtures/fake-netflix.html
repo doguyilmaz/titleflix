@@ -31,7 +31,6 @@
             controls: 'hidden', // 'hidden' | 'visible'
             overlay: false,
             titleFight: false,
-            mediaSession: false,
             staleControlsMs: 0,
           },
           window.__FAKE_NETFLIX__ || {},
@@ -129,13 +128,10 @@
           root.replaceChildren(el('div', { class: 'watch-video', 'data-uia': 'watch-video' }, player));
 
           if (config.playerData && current) {
+            const video = current.video;
             setTimeout(() => {
-              videoMetadata[current.video.id] = { _metadata: { video: current.video } };
+              videoMetadata[id] = { _metadataObject: { video } };
             }, config.playerDataDelayMs);
-          }
-
-          if (config.mediaSession && current && 'mediaSession' in navigator) {
-            navigator.mediaSession.metadata = new MediaMetadata({ title: current.video.title });
           }
 
           if (config.staleControlsMs && previous) {

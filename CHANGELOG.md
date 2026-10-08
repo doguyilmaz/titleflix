@@ -5,7 +5,7 @@
 A rewrite focused on reliability, plus a new look.
 
 ### Reliability
-- Reads the title from Netflix's player data, so it works as soon as the video loads instead of only while the player controls are visible. The on-screen controls, the pause screen and Chrome's media controls are still used as fallbacks.
+- Reads the title from Netflix's player data, so it works as soon as the video loads instead of only while the player controls are visible. The on-screen controls and the pause screen are still used as fallbacks.
 - Adds season numbers (`S1:E3`) when Netflix provides them.
 - Puts the title back immediately when Netflix resets it, so the tab no longer flips back to "Netflix" for up to 3 seconds at a time.
 - Detects in-app navigation (opening a title from Browse, next episode, back/forward). The old `history.pushState` hook ran in the content script's isolated world and never saw Netflix's navigation.

@@ -8,7 +8,6 @@ export interface FakeNetflixConfig {
   controls?: 'hidden' | 'visible';
   overlay?: boolean;
   titleFight?: boolean;
-  mediaSession?: boolean;
   staleControlsMs?: number;
 }
 

@@ -38,11 +38,6 @@ test.describe('reading the title', () => {
     await expect(page).toHaveTitle('Stranger Things - Netflix');
   });
 
-  test('falls back to Media Session metadata', async ({ openNetflix }) => {
-    const page = await openNetflix('/watch/80211627', { playerData: false, mediaSession: true });
-    await expect(page).toHaveTitle('1917 - Netflix');
-  });
-
   test('upgrades from a weaker source once player data arrives', async ({ openNetflix }) => {
     const page = await openNetflix('/watch/80077210', { overlay: true, playerDataDelayMs: 2500 });
     await expect(page).toHaveTitle('Stranger Things - Netflix');

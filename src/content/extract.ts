@@ -70,18 +70,6 @@ export function readPauseOverlay(root: ParentNode): TitleInfo | null {
   return usable(title) ? { title, source: 'pause-overlay' } : null;
 }
 
-/** Media Session metadata, which Chrome shows in its media controls. */
-export function readMediaSession(nav: Navigator = navigator): TitleInfo | null {
-  try {
-    const meta = nav.mediaSession?.metadata;
-    if (!meta) return null;
-    const title = stripSuffix(cleanText(meta.title));
-    return usable(title) ? { title, source: 'media-session' } : null;
-  } catch {
-    return null;
-  }
-}
-
 /**
  * Ask the main-world bridge for Netflix's player metadata. Event dispatch is synchronous, so the
  * answer (if any) has arrived by the time dispatchEvent returns.
