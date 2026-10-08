@@ -1,0 +1,553 @@
+/* Layout: brand row, a status card drawn as a tiny browser window, settings, footer. Dark first. */
+:root {
+  --bg: #101010;
+  --surface: #1c1c1c;
+  --strip: #0b0b0b;
+  --line: #2a2a2a;
+  --text: #f5f5f1;
+  --muted: #a3a3a3;
+  --faint: #737373;
+  --red: #e50914;
+  --red-press: #b20710;
+  --red-soft: rgb(229 9 20 / 16%);
+  --green: #46d369;
+  --amber: #f5b014;
+  --track: #3d3d3d;
+  --knob: #ffffff;
+  --chip: #141414;
+  --shadow: 0 1px 0 rgb(255 255 255 / 4%) inset, 0 8px 24px rgb(0 0 0 / 35%);
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f5f4f3;
+    --surface: #ffffff;
+    --strip: #e6e4e2;
+    --line: #e3e0dd;
+    --text: #141414;
+    --muted: #625e5b;
+    --faint: #8f8a86;
+    --red: #e50914;
+    --red-press: #b20710;
+    --red-soft: rgb(229 9 20 / 9%);
+    --green: #1f9d4c;
+    --amber: #b97f00;
+    --track: #d2cecb;
+    --knob: #ffffff;
+    --chip: #f5f4f3;
+    --shadow: 0 1px 2px rgb(20 20 20 / 6%), 0 6px 18px rgb(20 20 20 / 6%);
+    color-scheme: light;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  width: 360px;
+  margin: 0;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--bg);
+  color: var(--text);
+  font: 13px/1.45 system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+p {
+  margin: 0;
+}
+
+/* Brand */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 2px;
+}
+
+.brand h1 {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.version {
+  color: var(--faint);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Status card: tab strip + page */
+.window {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.strip {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 36px;
+  padding: 0 12px;
+  background: var(--strip);
+}
+
+.tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 1 240px;
+  min-width: 0;
+  height: 29px;
+  padding: 0 10px;
+  border-radius: 9px 9px 0 0;
+  background: var(--surface);
+}
+
+/* Chrome's curved "feet" where the active tab meets the page. */
+.tab::before,
+.tab::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  width: 9px;
+  height: 9px;
+}
+
+.tab::before {
+  left: -9px;
+  background: radial-gradient(circle at 0 0, transparent 8.5px, var(--surface) 9px);
+}
+
+.tab::after {
+  right: -9px;
+  background: radial-gradient(circle at 100% 0, transparent 8.5px, var(--surface) 9px);
+}
+
+.tab-icon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #ff2a33, #b20710);
+}
+
+.window[data-state='not-netflix'] .tab-icon {
+  background: var(--track);
+}
+
+.tab-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 12px;
+  -webkit-mask-image: linear-gradient(90deg, #000 82%, transparent);
+  mask-image: linear-gradient(90deg, #000 82%, transparent);
+}
+
+.tab-close,
+.tab-new {
+  position: relative;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: var(--faint);
+}
+
+.tab-close::before,
+.tab-close::after,
+.tab-new::before,
+.tab-new::after {
+  content: '';
+  position: absolute;
+  top: 6.5px;
+  left: 3px;
+  width: 8px;
+  height: 1.25px;
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.tab-close::before {
+  transform: rotate(45deg);
+}
+
+.tab-close::after {
+  transform: rotate(-45deg);
+}
+
+.tab-new {
+  align-self: center;
+  margin-top: 2px;
+}
+
+.tab-new::after {
+  transform: rotate(90deg);
+}
+
+.pane {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px 14px;
+}
+
+.pane-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--faint);
+  transition: background-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+.window[data-state='live'] .dot {
+  background: var(--green);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 22%, transparent);
+}
+
+.window[data-state='searching'] .dot,
+.window[data-state='loading'] .dot {
+  background: var(--amber);
+  animation: pulse 1.1s ease-in-out infinite;
+}
+
+.window[data-state='unreachable'] .dot {
+  background: var(--red);
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.source {
+  color: var(--faint);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.title {
+  min-height: 2.8em;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.title-suffix {
+  color: var(--faint);
+  font-weight: 500;
+}
+
+.window:not([data-state='live']) .title {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* Placeholder lines while the title is being looked up. Same height as two title lines. */
+.skeleton {
+  display: none;
+  gap: 8px;
+  align-content: center;
+  height: 2.8em;
+  font-size: 15px;
+}
+
+.skeleton span {
+  height: 11px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--line) 0%, color-mix(in srgb, var(--line) 40%, var(--surface)) 50%, var(--line) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+.skeleton span:last-child {
+  width: 62%;
+}
+
+.window[data-state='searching'] .skeleton,
+.window[data-state='loading'] .skeleton {
+  display: grid;
+}
+
+.window[data-state='searching'] .title,
+.window[data-state='loading'] .title {
+  display: none;
+}
+
+/* Popup data normally arrives within a few ms; only show the loading placeholder if it doesn't. */
+.window[data-state='loading'] .skeleton,
+.window[data-state='loading'] .pill {
+  animation: appear 0.2s 0.25s var(--ease) both;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.pane-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  /* Room for a two-line hint in every state, so the popup never changes height. */
+  min-height: 35px;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+kbd {
+  padding: 1px 5px;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  font: inherit;
+  font-size: 11px;
+}
+
+.btn {
+  flex: none;
+  padding: 7px 13px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--red);
+  color: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s var(--ease), transform 0.15s var(--ease);
+}
+
+.btn:hover {
+  background: color-mix(in srgb, var(--red) 88%, #ffffff);
+}
+
+.btn:active {
+  background: var(--red-press);
+  transform: scale(0.97);
+}
+
+/* Settings */
+.settings {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background-color 0.15s var(--ease);
+}
+
+.row:hover {
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+}
+
+.row-main {
+  padding-block: 13px;
+}
+
+.row-main .row-title {
+  font-size: 13.5px;
+  font-weight: 650;
+}
+
+.format {
+  padding: 12px 0 6px;
+  border-top: 1px solid var(--line);
+  transition: opacity 0.25s var(--ease);
+}
+
+.settings.is-off .format {
+  opacity: 0.4;
+}
+
+.settings.is-off .format .row {
+  cursor: default;
+}
+
+.settings.is-off .format .row:hover {
+  background: none;
+}
+
+.format-head {
+  display: grid;
+  gap: 7px;
+  padding: 0 16px 6px;
+}
+
+.eyebrow {
+  color: var(--faint);
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.example {
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--chip);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.example-suffix {
+  color: var(--faint);
+}
+
+/* Switch */
+.switch {
+  appearance: none;
+  position: relative;
+  flex: none;
+  width: 36px;
+  height: 21px;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--track);
+  cursor: pointer;
+  transition: background-color 0.22s var(--ease);
+}
+
+.switch::before {
+  content: '';
+  position: absolute;
+  top: 2.5px;
+  left: 2.5px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--knob);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 30%);
+  transition: transform 0.22s var(--ease), width 0.15s var(--ease);
+}
+
+.switch:checked {
+  background: var(--red);
+}
+
+.switch:checked::before {
+  transform: translateX(15px);
+}
+
+/* Knob stretches while pressed, like a native switch. */
+.row:active .switch:not(:disabled)::before {
+  width: 20px;
+}
+
+.row:active .switch:checked:not(:disabled)::before {
+  transform: translateX(11px);
+}
+
+.switch:disabled {
+  cursor: default;
+}
+
+.switch:focus-visible,
+.btn:focus-visible,
+.foot a:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+/* Footer */
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 2px;
+  color: var(--faint);
+  font-size: 11px;
+}
+
+.foot a {
+  flex: none;
+  white-space: nowrap;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.15s var(--ease);
+}
+
+.foot a:hover {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* No transitions on first paint, so switches don't animate into their saved state. */
+.no-motion *,
+.no-motion *::before,
+.no-motion *::after {
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

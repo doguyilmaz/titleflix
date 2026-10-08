@@ -1,201 +1,140 @@
-# 🎬 Titleflix
-
-> Transform your Netflix browsing experience with meaningful tab titles and better bookmarks!
-
-[![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-blue?logo=google-chrome)](https://chromewebstore.google.com/detail/titleflix)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Author](https://img.shields.io/badge/Author-Dogu%20Yilmaz-blue)](https://doguyilmaz.com)
-
-## ✨ What is Titleflix?
-
-Titleflix is a Chrome extension that automatically changes Netflix tab titles to include the actual content you're watching. No more generic "Netflix" tabs - now your bookmarks will show exactly what movie or episode you were watching!
-
-### 🎯 The Problem
-When you bookmark Netflix pages, they all show up as "Netflix" in your bookmarks bar, making it impossible to know what you were watching.
-
-### 💡 The Solution
-Titleflix automatically detects what you're watching and updates the tab title to something meaningful like:
-- `Devil May Cry: E1 Inferno - Netflix`
-- `Cyberpunk: Edgerunners: E1 Let You Down - Netflix`
-- `Love, Death & Robots: Close Encounters of the Mini Kind - Netflix`
-
-## 🚀 Features
-
-- **🎭 Smart Content Detection**: Automatically identifies movies, TV shows, and episodes
-- **📝 Meaningful Tab Titles**: Shows actual content names instead of generic "Netflix"
-- **🔖 Better Bookmarks**: Makes Netflix bookmarks actually useful
-- **🎨 Dynamic Icons**: Dark/light theme support with adaptive icons
-- **⚙️ Easy Controls**: Simple on/off toggle with theme preferences
-- **🛡️ Privacy-Focused**: Only runs on Netflix domains, no data collection ([Privacy Policy](PRIVACY_POLICY.md))
-- **⚡ Lightweight**: Minimal performance impact
-- **🌐 Universal**: Works on all Netflix regions and languages
-
-## 📸 Screenshots
-
-### Before Titleflix
-```
-🔖 Netflix
-🔖 Netflix  
-🔖 Netflix (What were these?! 😤)
-```
-
-### After Titleflix
-```
-🔖 Devil May Cry: E1 Inferno - Netflix
-🔖 Cyberpunk: Edgerunners: E1 Let You Down - Netflix  
-🔖 Kuroko's Basketball: E26 It is the Best Present - Netflix (Much better! 🎉)
-```
-
-## 🛠️ Installation
-
-### Option 1: Chrome Web Store (Recommended)
-1. Visit the [Chrome Web Store](https://chromewebstore.google.com/detail/titleflix)
-2. Click "Add to Chrome"
-3. Enjoy better Netflix bookmarks!
-
-### Option 2: Development Installation
-1. Download or clone this repository
-2. Install dependencies:
-   ```bash
-   bun install
-   ```
-3. Build the extension:
-   ```bash
-   bun run build
-   ```
-4. Load in Chrome:
-   - Go to `chrome://extensions/`
-   - Enable "Developer mode"
-   - Click "Load unpacked"
-   - Select the `dist` folder
-
-## 🎮 How to Use
-
-1. **Install the extension** (see above)
-2. **Navigate to Netflix** - The extension only works on Netflix domains
-3. **Browse or watch content** - Tab titles will automatically update
-4. **Bookmark away!** - Your bookmarks now have meaningful names
-
-### Extension Settings
-Click the Titleflix icon in your Chrome toolbar to access:
-- **Enable/Disable toggle** (only works on Netflix)
-- **Theme selection** (Auto, Light, Dark)
-- **Current status** display
-
-## 🎨 Theme Support
-
-Titleflix adapts to your preferences:
-- **Auto**: Matches your system's dark/light mode
-- **Light**: Uses light icons for light themes
-- **Dark**: Uses dark icons for dark themes
-
-Icons automatically switch when you change themes!
-
-## 🧑‍💻 Development
-
-### Prerequisites
-- [Bun](https://bun.sh/) (recommended) or Node.js 18+
-- TypeScript knowledge
-
-### Setup
-```bash
-# Clone the repository
-git clone https://github.com/doguyilmaz/titleflix.git
-cd titleflix
-
-# Install dependencies
-bun install
-
-# Start development
-bun run dev
-```
-
-### Scripts
-- `bun run build` - Build the extension
-- `bun run dev` - Watch mode for development
-- `bun run package` - Create zip file for Chrome Web Store
-- `bun run clean` - Clean build files
-- `bun run lint` - Type check
-
-### Project Structure
-```
-titleflix/
-├── src/
-│   ├── content.ts      # Main content script
-│   ├── background.ts   # Service worker
-│   ├── popup.ts        # Popup functionality
-│   └── popup.html      # Popup interface
-├── icons/              # Extension icons
-├── dist/               # Built extension
-└── manifest.json       # Extension manifest
-```
-
-## 🔧 Technical Details
-
-- **Manifest Version**: V3 (latest Chrome extension standard)
-- **Permissions**: `activeTab`, `storage` (minimal permissions)
-- **Host Permissions**: `*://*.netflix.com/*` (Netflix only)
-- **Architecture**: Content script + Service worker + Popup
-- **Languages**: TypeScript, HTML, CSS
-
-## 🤝 Contributing
-
-Contributions are welcome! Here's how you can help:
-
-1. **Fork the repository**
-2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
-3. **Commit your changes** (`git commit -m 'Add amazing feature'`)
-4. **Push to the branch** (`git push origin feature/amazing-feature`)
-5. **Open a Pull Request**
-
-### Ideas for Contributions
-- Support for other streaming platforms
-- Additional title formatting options
-- Internationalization
-- Performance improvements
-
-## 🐛 Bug Reports & Feature Requests
-
-Found a bug or have a feature idea? Please [open an issue](https://github.com/doguyilmaz/titleflix/issues) with:
-- Clear description of the issue/feature
-- Steps to reproduce (for bugs)
-- Screenshots if applicable
-- Your Chrome and extension version
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🔒 Privacy
-
-Titleflix is built with privacy as a core principle. We don't collect any data - see our [Privacy Policy](PRIVACY_POLICY.md) for complete details.
-
-## 🙏 Acknowledgments
-
-- Thanks to the Chrome Extensions community for documentation and examples
-- Netflix for providing a great streaming platform to enhance
-- All users who provide feedback and suggestions
-
-## 👨‍💻 Author
-
-**Dogu Yilmaz**
-- Website: [doguyilmaz.com](https://doguyilmaz.com)
-- GitHub: [@doguyilmaz](https://github.com/doguyilmaz)
-- Email: hello@doguyilmaz.com
-
-## ⭐ Show Your Support
-
-If Titleflix makes your Netflix experience better, please:
-- ⭐ Star this repository
-- 📝 Leave a review on the Chrome Web Store
-- 🐦 Share with friends who love Netflix
-- 💝 Consider supporting the project
-
----
-
 <div align="center">
-  <strong>Made with ❤️ for Netflix enthusiasts</strong>
-  <br>
-  <sub>Titleflix - Because every bookmark deserves a meaningful name!</sub>
+  <img src="assets/logo.svg" width="96" height="96" alt="Titleflix logo">
+  <h1>Titleflix</h1>
+  <p><strong>Real names for your Netflix tabs and bookmarks.</strong></p>
+
+[![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-141414?logo=google-chrome&logoColor=e50914)](https://chromewebstore.google.com/detail/titleflix)
+[![CI](https://github.com/doguyilmaz/titleflix/actions/workflows/ci.yml/badge.svg)](https://github.com/doguyilmaz/titleflix/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-e50914.svg)](LICENSE)
+
 </div>
+
+Every Netflix tab is called "Netflix", so every Netflix bookmark is called "Netflix". Titleflix renames the tab to what is actually playing:
+
+```
+Before                         After
+🔖 Netflix                      🔖 Stranger Things: S1:E3 Chapter Three: Holly, Jolly - Netflix
+🔖 Netflix                      🔖 Devil May Cry: S1:E1 Inferno - Netflix
+🔖 Netflix                      🔖 1917 - Netflix
+```
+
+<p align="center"><img src="store/images/screenshot-1-tabs.png" width="800" alt="A Chrome tab strip where every Netflix tab says Netflix, and the same tabs with Titleflix showing each show and episode"></p>
+
+## Features
+
+- **Season, episode and episode title** for shows, or just the title for movies.
+- **Keeps up with Netflix**: next episode, autoplay, back/forward and in-app navigation update the title instantly.
+- **Holds the title**: when Netflix resets the tab title, Titleflix puts it back before the next frame, so there's no flicker.
+- **Settings apply live**: turning it off or changing the format updates open tabs without reloading the video.
+- **Works in tabs that were already open** when you install or update the extension.
+- **Private by design**: runs only on `www.netflix.com`, makes no network requests, and stores nothing but your three settings.
+
+## How it finds the title
+
+Netflix only shows the title on screen while the player controls are visible, which is why older versions sometimes missed it. Titleflix now checks several sources and keeps the most reliable answer for each video:
+
+| Priority | Source | When it's available |
+| --- | --- | --- |
+| 1 | Netflix's player data (show, season, episode, episode title) | As soon as the video loads |
+| 2 | The title in the player controls | While the controls are visible |
+| 3 | The "You're watching" pause screen | After pausing for a while |
+
+A weaker source never replaces a stronger one for the same video. Once a title is found it stays until you move to another video.
+
+## Install
+
+**Chrome Web Store:** [Titleflix](https://chromewebstore.google.com/detail/titleflix) → *Add to Chrome*.
+
+**From source:**
+
+```bash
+bun install
+bun run build
+```
+
+Then open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the `dist` folder. Requires Chrome 111 or newer.
+
+## Settings
+
+Click the Titleflix icon in the toolbar:
+
+<p align="center"><img src="store/images/screenshot-3-popup.png" width="800" alt="The Titleflix popup in dark and light mode, showing the title applied to the current tab and the settings"></p>
+
+| Setting | Default | Effect |
+| --- | --- | --- |
+| Rename Netflix tabs | On | Off restores Netflix's own titles immediately |
+| Season, episode and episode name | On | `Dark: S1:E2 Lies` vs. `Dark` |
+| “- Netflix” at the end | On | Adds ` - Netflix` so bookmarks are easy to search |
+
+The popup also shows the title being applied to the current tab and where it came from. If something looks wrong, **Report a problem** opens a GitHub issue pre-filled with your extension and browser version (never what you're watching).
+
+## Privacy and permissions
+
+| Permission | Why |
+| --- | --- |
+| `https://www.netflix.com/*` | Read what's playing and set the tab title. No other site is touched. |
+| `storage` | Save your three settings (synced through your Chrome profile). |
+| `scripting` | Start Titleflix in Netflix tabs that were already open when it was installed or updated. |
+
+No analytics, no remote code, no network requests. See the [privacy policy](PRIVACY_POLICY.md).
+
+## Development
+
+Requires [Bun](https://bun.sh) 1.2+.
+
+| Command | What it does |
+| --- | --- |
+| `bun run build` | Bundle the extension into `dist/` |
+| `bun run dev` | Rebuild on every change |
+| `bun run lint` | Type-check everything |
+| `bun test` | Unit tests (title parsing, formatting, player-data parsing, settings migration) |
+| `bun run test:e2e` | Build, then run the extension in Chromium against a simulated Netflix |
+| `bun run check` | All of the above |
+| `bun run package` | Build and create `titleflix-v<version>.zip` for the Web Store |
+| `bun run icons` | Re-render `assets/icons/*.png` from the SVG logos |
+| `bun run store:images` | Re-render the Chrome Web Store images |
+| `bun run bump:patch` | Bump the version in `package.json` and `manifest.json`, commit and tag (also `bump:minor`, `bump:major`) |
+
+### Project layout
+
+```
+src/
+├── content/
+│   ├── index.ts      # Content script: navigation, title enforcement, lifecycle
+│   └── extract.ts    # Readers for each title source
+├── bridge.ts         # Runs in the page to read Netflix's player data; answers content-script queries
+├── background.ts     # Install/update: settings migration, injection into open tabs
+├── popup/            # Toolbar popup (HTML, CSS, TS)
+└── shared/           # Pure logic shared by all of the above (title formatting, metadata parsing, settings)
+assets/               # Logo SVGs and rendered PNG icons
+store/                # Web Store images (source + rendered) and listing copy
+tests/
+├── unit/             # bun test
+└── e2e/              # Playwright: real extension + simulated Netflix app
+```
+
+### How the end-to-end tests work
+
+The Playwright suite loads the built extension into Chromium and serves a small fake Netflix app ([`tests/e2e/fixtures/fake-netflix.html`](tests/e2e/fixtures/fake-netflix.html)) at real `https://www.netflix.com/...` URLs, so the manifest's match patterns, both content-script worlds, the service worker and the popup run exactly as they would on Netflix. The fake app reproduces the behaviour Titleflix depends on: `history.pushState` navigation, controls that appear and disappear, the pause overlay, the player-data object, and Netflix overwriting `document.title`.
+
+The tests can't log in to a real Netflix account, so the fake app is based on Netflix's DOM and player data as known today. If Netflix changes its markup, run through the manual checklist below and update the fixture together with the code.
+
+To use a Chromium that is already installed instead of Playwright's download, set `CHROMIUM_PATH=/path/to/chrome`.
+
+### Testing on real Netflix
+
+The automated tests can't sign in to Netflix. [docs/testing-on-netflix.md](docs/testing-on-netflix.md) has the checklist for your own account, a debug log you can turn on (`localStorage.setItem('titleflix:debug', '1')` in the Netflix tab), and a ready-made prompt for running the checklist with Claude in Chrome.
+
+### Store images
+
+`bun run store:images` captures the real popup in every state and renders the Chrome Web Store screenshots and promo tiles from [`store/images.html`](store/images.html) into `store/images/`. Listing copy (English and Turkish) and permission justifications are in [`store/listing.md`](store/listing.md).
+
+## Contributing
+
+Issues and pull requests are welcome. Please run `bun run check` before opening a PR. CI runs the same checks.
+
+## License
+
+[MIT](LICENSE) © Dogu Yilmaz · [doguyilmaz.com](https://doguyilmaz.com) · [hello@doguyilmaz.com](mailto:hello@doguyilmaz.com)
+
+Titleflix is an independent project and is not affiliated with or endorsed by Netflix, Inc.

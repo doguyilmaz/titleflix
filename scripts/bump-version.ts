@@ -1,23 +1,17 @@
 #!/usr/bin/env bun
-
+/**
+ * Bumps the version in package.json and manifest.json, commits, and tags the commit.
+ *   bun scripts/bump-version.ts [patch|minor|major]
+ */
 import { $ } from 'bun';
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 type VersionType = 'patch' | 'minor' | 'major';
 
-interface PackageJson {
-  version: string;
-  [key: string]: any;
-}
-
-interface ManifestJson {
-  version: string;
-  [key: string]: any;
-}
-
-function bumpVersion(currentVersion: string, type: VersionType): string {
-  const parts = currentVersion.split('.').map(Number);
-  const [major, minor, patch] = parts;
+export function bumpVersion(currentVersion: string, type: VersionType): string {
+  const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(currentVersion);
+  if (!match) throw new Error(`Unsupported version "${currentVersion}" (expected x.y.z)`);
+  const [major, minor, patch] = match.slice(1).map(Number) as [number, number, number];
 
   switch (type) {
     case 'major':
@@ -26,56 +20,41 @@ function bumpVersion(currentVersion: string, type: VersionType): string {
       return `${major}.${minor + 1}.0`;
     case 'patch':
       return `${major}.${minor}.${patch + 1}`;
-    default:
-      throw new Error(`Invalid version type: ${type}`);
   }
 }
 
-const versionType: string = process.argv[2] || 'patch';
-
-if (!['patch', 'minor', 'major'].includes(versionType)) {
-  console.error('❌ Invalid version type. Use: patch, minor, or major');
-  process.exit(1);
+function updateVersion(path: string, version: string): void {
+  const json = JSON.parse(readFileSync(path, 'utf8')) as { version: string };
+  json.version = version;
+  writeFileSync(path, JSON.stringify(json, null, 2) + '\n');
 }
 
-const validVersionType = versionType as VersionType;
+if (import.meta.main) {
+  const versionType = process.argv[2] ?? 'patch';
+  if (versionType !== 'patch' && versionType !== 'minor' && versionType !== 'major') {
+    console.error('❌ Invalid version type. Use: patch, minor, or major');
+    process.exit(1);
+  }
 
-try {
-  console.log(`🚀 Bumping ${validVersionType} version...`);
+  try {
+    const status = await $`git status --porcelain`.text();
+    if (status.trim()) throw new Error('Working tree is not clean; commit or stash first.');
 
-  // Read current version from package.json
-  const packageJson: PackageJson = JSON.parse(readFileSync('package.json', 'utf8'));
-  const currentVersion = packageJson.version;
-  const newVersion = bumpVersion(currentVersion, validVersionType);
+    const current = (JSON.parse(readFileSync('package.json', 'utf8')) as { version: string }).version;
+    const next = bumpVersion(current, versionType);
+    console.log(`📦 Version: ${current} → ${next}`);
 
-  console.log(`📦 Version: ${currentVersion} → ${newVersion}`);
+    updateVersion('package.json', next);
+    updateVersion('manifest.json', next);
 
-  // Update package.json version
-  packageJson.version = newVersion;
-  writeFileSync('package.json', JSON.stringify(packageJson, null, 2) + '\n');
+    await $`git add package.json manifest.json`;
+    await $`git commit -m ${`bump v${next}`}`;
+    // Tag after committing so the tag points at the bump commit.
+    await $`git tag v${next}`;
 
-  // Update manifest.json version
-  const manifestJson: ManifestJson = JSON.parse(readFileSync('manifest.json', 'utf8'));
-  manifestJson.version = newVersion;
-  writeFileSync('manifest.json', JSON.stringify(manifestJson, null, 2) + '\n');
-
-  console.log('✅ Updated package.json and manifest.json versions');
-
-  // Stage both files
-  await $`git add package.json manifest.json`;
-
-  // Create git tag
-  await $`git tag v${newVersion}`;
-
-  // Commit with version tag
-  await $`git commit -m "bump v${newVersion}"`;
-
-  console.log(`🎉 Version bumped to v${newVersion} and committed!`);
-  console.log(`📝 Next steps:`);
-  console.log(`   git push`);
-  console.log(`   git push --tags`);
-} catch (error: unknown) {
-  const errorMessage = error instanceof Error ? error.message : String(error);
-  console.error('❌ Error bumping version:', errorMessage);
-  process.exit(1);
+    console.log(`🎉 Bumped to v${next}. Next: git push && git push --tags`);
+  } catch (error: unknown) {
+    console.error('❌ Error bumping version:', error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  }
 }
