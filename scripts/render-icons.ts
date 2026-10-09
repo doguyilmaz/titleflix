@@ -19,12 +19,13 @@ const page = await browser.newPage({ deviceScaleFactor: 1 });
 for (const size of SIZES) {
   const source = size <= 32 ? 'assets/logo-small.svg' : 'assets/logo.svg';
   const svg = readFileSync(source, 'utf8');
-  // Chrome Web Store asks for 96px artwork inside the 128px icon.
+  // Chrome Web Store asks for 96px artwork inside the 128px icon, and a subtle white outer glow for dark icons.
   const art = size === 128 ? 96 : size;
   const pad = (size - art) / 2;
+  const glow = size === 128 ? 'filter:drop-shadow(0 0 3px rgb(255 255 255 / 0.18));' : '';
   await page.setViewportSize({ width: size, height: size });
   await page.setContent(
-    `<style>html,body{margin:0;background:transparent}svg{display:block;width:${art}px;height:${art}px;margin:${pad}px}</style>${svg}`,
+    `<style>html,body{margin:0;background:transparent}svg{display:block;width:${art}px;height:${art}px;margin:${pad}px;${glow}}</style>${svg}`,
   );
   await page.screenshot({ path: `${OUT_DIR}/icon${size}.png`, omitBackground: true });
   console.log(`✓ ${OUT_DIR}/icon${size}.png (from ${source})`);
