@@ -27,6 +27,7 @@ const STATIC: Record<string, string> = {
   'icons/icon32.png': 'assets/icons/icon32.png',
   'icons/icon48.png': 'assets/icons/icon48.png',
   'icons/icon128.png': 'assets/icons/icon128.png',
+  _locales: 'src/_locales',
 };
 
 function readJson<T>(path: string): T {
@@ -60,7 +61,7 @@ async function build(): Promise<string> {
     writeFileSync(`${DIST}/${out}`, await artifact.text());
   }
 
-  for (const [out, src] of Object.entries(STATIC)) cpSync(src, `${DIST}/${out}`);
+  for (const [out, src] of Object.entries(STATIC)) cpSync(src, `${DIST}/${out}`, { recursive: true });
   writeFileSync(`${DIST}/manifest.json`, JSON.stringify(manifest, null, 2) + '\n');
 
   return pkg.version;

@@ -1,0 +1,6 @@
+{
+  "extName": { "message": "Titleflix" },
+  "extDescription": {
+    "message": "Netflix sekmelerini izlediğin dizinin ve bölümün adıyla yeniden adlandırır, böylece yer imlerin karışmaz."
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "extName": { "message": "Titleflix" },
+  "extDescription": {
+    "message": "Renames Netflix tabs to the show and episode you're watching, so bookmarks and tabs say what they are."
+  }
+}

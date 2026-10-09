@@ -105,6 +105,7 @@ src/
 ├── bridge.ts         # Runs in the page to read Netflix's player data; answers content-script queries
 ├── background.ts     # Install/update: settings migration, injection into open tabs
 ├── popup/            # Toolbar popup (HTML, CSS, TS)
+├── _locales/         # Extension name and summary (en, tr); the Web Store reads them from here
 └── shared/           # Pure logic shared by all of the above (title formatting, metadata parsing, settings)
 assets/               # Logo SVGs and rendered PNG icons
 store/                # Web Store images (source + rendered) and listing copy

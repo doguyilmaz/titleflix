@@ -1,20 +1,10 @@
 # Chrome Web Store listing
 
-Copy for the Developer Dashboard. English is the default listing; Turkish goes under *Store listing → Add a language → Türkçe*.
+Copy for the Developer Dashboard. English is the default listing; pick Türkçe in the listing's language menu for the Turkish one.
+
+The name and summary are not pasted here: the dashboard reads them from the package, `src/_locales/<lang>/messages.json` (`extName`, `extDescription`, 132 characters max).
 
 ## English
-
-**Name**
-
-```
-Titleflix
-```
-
-**Summary** (132 characters max; this is 102)
-
-```
-Renames Netflix tabs to the show and episode you're watching, so bookmarks and tabs say what they are.
-```
 
 **Description**
 
@@ -53,12 +43,6 @@ Titleflix is an independent project and isn't affiliated with Netflix.
 ```
 
 ## Türkçe
-
-**Özet** (en fazla 132 karakter; bu 105)
-
-```
-Netflix sekmelerini izlediğin dizinin ve bölümün adıyla yeniden adlandırır, böylece yer imlerin karışmaz.
-```
 
 **Açıklama**
 
