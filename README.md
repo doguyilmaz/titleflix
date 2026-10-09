@@ -76,7 +76,7 @@ The popup also shows the title being applied to the current tab and where it cam
 | `storage` | Save your three settings (synced through your Chrome profile). |
 | `scripting` | Start Titleflix in Netflix tabs that were already open when it was installed or updated. |
 
-No analytics, no remote code, no network requests. See the [privacy policy](PRIVACY_POLICY.md).
+No analytics, no remote code, no network requests. See the [privacy policy](https://www.doguyilmaz.com/legal/privacy/titleflix/).
 
 ## Development
 

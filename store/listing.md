@@ -125,6 +125,6 @@ Starts the extension's own bundled script in Netflix tabs that were already open
 
 **Remote code:** No.
 
-**Data usage:** tick "This item does not collect or use user data" and all three certifications.
+**Data usage:** tick only "Website content" and all three certifications. Titleflix reads the title of what is playing from the Netflix page and uses it on the device only; the store still counts that as handling website content.
 
-**Privacy policy URL:** `https://github.com/doguyilmaz/titleflix/blob/main/PRIVACY_POLICY.md`
+**Privacy policy URL:** `https://www.doguyilmaz.com/legal/privacy/titleflix/`
